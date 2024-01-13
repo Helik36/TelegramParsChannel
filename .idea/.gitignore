@@ -7,6 +7,6 @@
 /dataSources/
 /dataSources.local.xml
 # private tokens and session
-/python-telegram-bot/tokens_tele_bot.py
-/telethon/tokens_telethon.py
+tokens_tele_bot.py
+tokens_telethon.py
 anon.session
