@@ -1,11 +1,9 @@
-import asyncio
-
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, filters, MessageHandler
+from tokens_tele_bot import TOKEN
 
-import bot
 
-TOKEN = "token"
+token_bot = TOKEN
 
 async def getMessId(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update.message)
@@ -16,7 +14,7 @@ async def start_callback(update, context):
 
 
 def main():
-    app = Application.builder().token(TOKEN).build()
+    app = Application.builder().token(token_bot).build()
 
     app.add_handler(CommandHandler('start', start_callback))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), getMessId))

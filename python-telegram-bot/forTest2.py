@@ -1,5 +1,6 @@
 import telegram
 import asyncio
+from tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID
 
 from telegram import Update
 from telegram._message import Message
@@ -8,9 +9,10 @@ from typing import (Union, )
 
 from telegram.ext import Application, Updater, CommandHandler, filters
 
-TOKEN = "token"
-my_id = "0123"
-channel_id = "-0123"
+token_bot = TOKEN
+my_id = MY_ID
+my_channel_id = MY_CHANNEL_ID
+
 
 bot = telegram.Bot(TOKEN)
 
@@ -36,7 +38,7 @@ async def defCopyMess(chann_id, my, messid) -> None:
 async def startPoint():
     mess_id = await getMessId()
     # await deforwMess(channel_id, my_id, mess_id)
-    await defCopyMess(channel_id, my_id, mess_id)
+    await defCopyMess(my_channel_id, my_id, mess_id)
 
 if __name__ == "__main__":
     asyncio.run(startPoint())

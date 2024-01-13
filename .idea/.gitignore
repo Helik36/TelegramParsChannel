@@ -6,3 +6,7 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+# private tokens and session
+/python-telegram-bot/tokens_tele_bot.py
+/telethon/tokens_telethon.py
+anon.session
