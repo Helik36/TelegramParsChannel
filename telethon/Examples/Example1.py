@@ -1,6 +1,6 @@
 from telethon import TelegramClient
 
-from ..tokens_telethon import API_ID, API_HASH
+from tokens.tokens_telethon import API_ID, API_HASH
 
 # Use your own values from my.telegram.org
 api_id = API_ID

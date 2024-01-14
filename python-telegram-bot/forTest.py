@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, filters, MessageHandler
-from tokens_tele_bot import TOKEN
+from lod.tokens.tokens_tele_bot import TOKEN
 
 
 token_bot = TOKEN

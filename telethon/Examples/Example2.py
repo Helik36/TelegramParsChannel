@@ -1,10 +1,10 @@
 from telethon import TelegramClient
-from ..tokens_telethon import API_ID, API_HASH
+from tokens.tokens_telethon import API_ID, API_HASH
 
 # Remember to use your own values from my.telegram.org!
 api_id = API_ID
 api_hash = API_HASH
-client = TelegramClient('anon', api_id, api_hash)
+client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
 async def main():
     # Getting information about yourself

@@ -1,13 +1,6 @@
 import telegram
 import asyncio
-from tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID
-
-from telegram import Update
-from telegram._message import Message
-from telegram._utils.types import CorrectOptionID, FileInput, JSONDict, ODVInput, ReplyMarkup
-from typing import (Union, )
-
-from telegram.ext import Application, Updater, CommandHandler, filters
+from lod.tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID
 
 token_bot = TOKEN
 my_id = MY_ID

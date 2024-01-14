@@ -1,8 +1,8 @@
 import logging
 
 from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, CallbackContext
-from ..tokens_tele_bot import TOKEN
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from tokens.tokens_tele_bot import TOKEN
 
 token_bot = TOKEN
 
