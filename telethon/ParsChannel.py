@@ -1,4 +1,6 @@
-from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
+import re
+
+from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
 from telethon import TelegramClient, events
 
 import time
@@ -24,49 +26,39 @@ api_id = API_ID
 api_hash = API_HASH
 client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
-id_for_pars_channel = -1001201194408  # Мир PS
 channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
+channel_from_pars = CHANNEL_FROM_PARS
 
-# Добавил обработчик событый, указал, что нужно реагировать, если приходят новые сообщения из channel_test
-@client.on(events.NewMessage(chats=channel_test))
-async def parsingChannel(event):
-    # Получаем последние сообщения Лимит показывает отправленные объекты. Т.е в телеге может быть 1 сообщение,
-    # у него есть 2 фото и текст. Это 3 разных объекта Далее работается также как и с get_message
-    pasring_photos = []  # Сюда можно положить несколько фото и разом отправить в client.send_file
-    pasring_text = []
-    print("wait event")
-    print(f"event -- {event}")
-    print(f"event.message -- {event.message}")
-    async for data_message in client.iter_messages(channel_test, limit=2):
+detele_word = ["Для покупки с нашей помощью", "Цена в рублях указана при покупке с нашей помощью"]
 
-        # Если фото присутстует, добавить в массив, иначе ничего не делать
-        if data_message.photo is not None:
-            pasring_photos.append(data_message.photo)
-        else:
-            pass
+# Срабатывает на сообщения и на сообщения с фото 1.
+@client.on(events.NewMessage(chats=channel_from_pars))
+async def parsing_new_message(event):
+    print("Сработал NewMessage\n")
 
-        # Если текст не пустой, добавить в массив, иначе ничего не делать
-        if data_message.message != '':
-            pasring_text.append(data_message.message)
-        else:
-            pass
-
-    await client.send_file(channel_PL, pasring_photos, caption=pasring_text[0])
-
-    print("Done")
-    time.sleep(10)
-
-    # print(pasring_text)
-    # print(pasring_photos[0])
-    # print(pasring_photos[1])
+    pasring_text = event.message
 
 
-# async def main():
-#     await parsingChannel()
+    for word in range(len(detele_word)):
+        # .*? - любой текст. (\n \n|$) -Это группа захвата, которая соответствует или символу новой строки, за которым следует пробел,
+        # за которым следует ещё один символ новой строки (\n \n), или концу строки ($).
+        reg_text = re.escape(detele_word[word]) + r".*?(\n \n|$)"
+        event.message.messag = pasring_text.message = re.sub(reg_text, "", pasring_text.message, flags=re.DOTALL)
 
+    # Если изменять pasring_text и отправлять только его, то в таком случае инфомрация об объекте message не будет
+    # передана дальше, что повлиять на вложения (Как минимум фото, нужно проверить остальные).
+    # Поэтому изменяем pasring_text и изменения внсоим в event.message.messag (можно сократить)
+
+    if event.grouped_id:
+        return    # ignore messages that are gallery here
+    await client.send_message(channel_PL, pasring_text)
+
+# Копирует и пересылает фото не разделяя их на разные сообщения. Срабатывает, если фоток больше чем 1
+@client.on(events.Album(chats=channel_from_pars))
+async def parsing_almun(event):
+    print("Сработал Album")
+    await client.send_file(channel_PL, event.messages, caption=event.original_update.message.message)
 
 client.start()
 client.run_until_disconnected()
-
-
