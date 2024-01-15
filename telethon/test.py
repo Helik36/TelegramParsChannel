@@ -24,7 +24,6 @@ api_id = API_ID
 api_hash = API_HASH
 client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
-id_for_pars_channel = -1001201194408  # Мир PS
 channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
 

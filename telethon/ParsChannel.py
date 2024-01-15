@@ -2,8 +2,8 @@ import re
 
 from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
 from telethon import TelegramClient, events
+import emoji
 
-import time
 import logging
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.WARNING)
@@ -21,7 +21,7 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 4. Обдумать добавление тегов
 
-5. Добавить фильтры для отсеивания постов
+5. Добавить фильтры для отсеивания постов (ссылки на вк, куда-то ещё
 
 """
 
@@ -33,25 +33,29 @@ channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
 channel_from_pars = CHANNEL_FROM_PARS
 
-detele_word = ["Для покупки с нашей помощью", "Цена в рублях указана при покупке с нашей помощью"]
+# массив по которым будут удаляться ненужные слова
+detele_word = ["#", "Для покупки с нашей помощью", "Цена в рублях указана при покупке с нашей помощью"]
 
 # Срабатывает на сообщения и на сообщения с фото 1.
+
+# @client.on(events.NewMessage(chats='me'))
 @client.on(events.NewMessage(chats=channel_from_pars))
 async def parsing_new_message(event):
     print("Сработал NewMessage\n")
 
     pasring_text = event.message
 
-
     for word in range(len(detele_word)):
-        # .*? - любой текст. (\n \n|$) -Это группа захвата, которая соответствует или символу новой строки, за которым следует пробел,
-        # за которым следует ещё один символ новой строки (\n \n), или концу строки ($).
+        # .*? - любой текст. (\n \n|$) -Это группа захвата, которая соответствует или символу новой строки,
+        # за которым следует пробел, за которым следует ещё один символ новой строки (\n \n), или концу строки ($).
         reg_text = re.escape(detele_word[word]) + r".*?(\n \n|$)"
-        event.message.messag = pasring_text.message = re.sub(reg_text, "", pasring_text.message, flags=re.DOTALL)
+        pasring_text.message = re.sub(reg_text, "", pasring_text.message, flags=re.DOTALL)
 
-    # Если изменять pasring_text и отправлять только его, то в таком случае инфомрация об объекте message не будет
-    # передана дальше, что повлиять на вложения (Как минимум фото, нужно проверить остальные).
-    # Поэтому изменяем pasring_text и изменения внсоим в event.message.messag (можно сократить)
+        # Удаление всех смайликов в тексте
+        for i in emoji.UNICODE_EMOJI['en']:
+            if i in pasring_text.message:
+                pasring_text.message = pasring_text.message.replace(f"{i} ", "")
+                break
 
     if event.grouped_id:
         return    # ignore messages that are gallery here
@@ -60,7 +64,7 @@ async def parsing_new_message(event):
 # Копирует и пересылает фото не разделяя их на разные сообщения. Срабатывает, если фоток больше чем 1
 @client.on(events.Album(chats=channel_from_pars))
 async def parsing_almun(event):
-    print("Сработал Album")
+    print("Сработал Album\n")
     await client.send_file(channel_PL, event.messages, caption=event.original_update.message.message)
 
 client.start()
