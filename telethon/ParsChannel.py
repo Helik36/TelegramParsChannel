@@ -1,9 +1,9 @@
 import re
 
-from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
+from Examples.tokens.tokens_telethon import __API_ID, __API_HASH, __CHANNEL_PL, __CHANNEL_FROM_PARS
 from notNeededWords import DELETE_TEXT
 from telethon import TelegramClient, events
-import emoji
+import emoji # pip install emoji==1.7
 
 import logging
 
@@ -24,13 +24,12 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 """
 
-api_id = API_ID
-api_hash = API_HASH
+api_id = __API_ID
+api_hash = __API_HASH
 client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
-channel_test = CHANNEL_TEST
-channel_PL = CHANNEL_PL
-channel_from_pars = CHANNEL_FROM_PARS
+channel_PL = __CHANNEL_PL
+channel_from_pars = __CHANNEL_FROM_PARS
 
 # массив по которым будут удаляться ненужные слова или текст или вообще не выкладываться. Перенести в другой файл
 delete_word = DELETE_TEXT
@@ -77,26 +76,26 @@ def correction_text(event_message):
 # Срабатывает на сообщения и на сообщения с фото 1.
 @client.on(events.NewMessage(chats=channel_from_pars))
 async def parsing_new_message(event):
-    for i in range(len(CHANNEL_FROM_PARS)):
+    for i in range(len(__CHANNEL_FROM_PARS)):
         # hasattr() принимает два аргумента: объект и имя атрибута в виде строки. Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
         if hasattr(event.message.peer_id, "channel_id"):
-            if int(f"-100{event.message.peer_id.channel_id}") == CHANNEL_FROM_PARS[i]:
-                if CHANNEL_FROM_PARS[i] == -1001201194408:
+            if int(f"-100{event.message.peer_id.channel_id}") == __CHANNEL_FROM_PARS[i]:
+                if channel_from_pars[i] == -1001201194408:
                     print("Событие для PS WORLD\n")
                     break
-                if CHANNEL_FROM_PARS[i] == -1001778660986:
+                if channel_from_pars[i] == -1001778660986:
                     print("Событие для КБ. ИГРЫ\n")
                     break
-                if CHANNEL_FROM_PARS[i] == -1001908326943:
+                if channel_from_pars[i] == -1001908326943:
                     print("Событие для Пекашечка\n")
                     break
-                if CHANNEL_FROM_PARS[i] == -1001397640032:
+                if channel_from_pars[i] == -1001397640032:
                     print("Событие для Раздача игр\n")
                     break
-                if CHANNEL_FROM_PARS[i] == -1001322001342:
+                if channel_from_pars[i] == -1001322001342:
                     print("Событие для InYourEyes\n")
                     break
-                if CHANNEL_FROM_PARS[i] == -1002076831448:
+                if channel_from_pars[i] == -1002076831448:
                     print("Событие для test\n")
                     break
 
