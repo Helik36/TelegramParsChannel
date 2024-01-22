@@ -2,12 +2,14 @@ import re
 
 import telethon
 
-from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
-from notNeededWords import DELETE_TEXT
+from additional_files.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
+from additional_files.notNeededWords import DELETE_TEXT
 from telethon import TelegramClient, events
-import emoji
+import emoji #  pip install emoji==1.7
 
 import logging
+
+from chatGPT import rewrite
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
@@ -27,6 +29,7 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 1. Придумать задачи
 
 2. После получения события, забирать сообщение, немного изменять его (chatgpt), и отправлять
+upd: для chatgpt нужны токены чтобы использовать API. Подумать или найти другие варианты
 
 3. Обдумать добавление тегов
 
@@ -123,12 +126,14 @@ async def parsing_new_message(event):
 
     pasring_text = correction_text(event.message)
     # print(pasring_text.message)  # Для дебага сообщений
+    # pasring_text = await rewrite(pasring_text.message)
 
     if event.grouped_id:
         return  # ignore messages that are gallery here
 
     # По умолчанию, если отправляется фотко, к ней можно приложить текст с не больее 1024 символов. Иначе будет ошибка
     # Решение: 1) Чтобы этого избежать, нужен премиум, он даёт 20248 символов. 2) Либо отправлять картинку как ссылку
+    # Если текста нет вообще, сообщение может не отправиться. Проверить и подумать
     try:
         await client.send_message(channel_PL, pasring_text)
     except telethon.errors.rpcerrorlist.MediaCaptionTooLongError:
