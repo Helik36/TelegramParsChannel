@@ -1,3 +1,5 @@
+import asyncio
+
 from additional_files.tokens_telethon import TOKEN_VSE_GPT
 import re
 import openai
@@ -7,14 +9,18 @@ async def rewrite(my_text):
     openai.api_key = TOKEN_VSE_GPT
     openai.base_url = "https://api.vsegpt.ru:6070/v1/"
 
-    # my_text = """
-    # Он все правильно делает?
-    # """
+    # prompt = (
+    #     "Your task is a rewrite of the text, just a couple of changes.Style is a news post in the Telegram channel."
+    #     "If there is not enough text, replace just a couple of words. If there is a lot of text, then whole sentences can be used."
+    #     "If there are indents in my text, try to keep them so that you can visually break the text into different components."
+    #     "The text that needs to be rewritten:"
+    #     ""
+    #     f"{my_text}")
 
     prompt = (
-        "Твоя задача - переписать весь текст лучшими словами и сделать его уникальным на естественном языке. Не бойся использовать сленг"
+        "Твоя задача -  небольшой рерайт текста, буквально пару изменений. Стиль - новостной пост в Телеграмм канале."
+        "Если текста мало, замени буквально пару слов. Если текста очень много, то можно целые предложенения."
         "Если в моём тексте присутсвутют отступы, старайся их сохранить, чтобы визуально можно было разбить текст на разные составляющие."
-        "Если текст не очень большой, т.е. от 2 до 7 слов, измени буквально 1-2 слова. "
         "Текст который нужно переписать:"
         ""
         f"{my_text}")
@@ -24,22 +30,30 @@ async def rewrite(my_text):
     response_big = openai.chat.completions.create(
         model="anthropic/claude-instant-v1",
         messages=messages,
-        temperature=0.7,
+        # Чем больше «temperature», тем более художественный даст ответ.
+        # Чем меньше значение, тем более «скучным» или наукообразным будет ответ.
+        temperature=0.5,
         n=1,
         max_tokens=int(len(prompt) * 1.5),
     )
 
     response = response_big.choices[0].message.content
     # print(response)
-    text = "Response: " + response
-    text = text.replace(re.findall(r'Response.+[\s]+', text)[0], "")
+    text = response
 
-    # print(text)
+    try:
+        text = text.replace(re.findall(r"[\w].+:\n\n", text)[0], "")
+    except:
+        pass
+
+    print(text)
     return text
 
 
-# answer = rewrite()
+if __name__ == "__main__":
+    text = """Вышли обзоры GeForce RTX 4070 Ti Super
 
+    Видеокарта оказалась всего на 7% быстрее обычной RTX 4070 Ti, а обойдется новинка $799"""
 
-
-# print(answer)
+    answer = asyncio.run(rewrite(text))
+    print(answer)

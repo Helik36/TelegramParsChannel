@@ -18,6 +18,8 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 Заметил, что если если событие не срабатывает на канал, возможно это интегрированная реклама, которая была выложена 
 не как пост, а именно как реклама. Скрипт не реагирует на тикие посты
+
+upd - Такое ощущение, что это не всегда так. Иногда была вроде не реклама, но скрипт не ловил активность
 """
 
 
@@ -51,7 +53,7 @@ delete_word = DELETE_TEXT
 
 def correction_text(event_message):
 
-    pasring_text = event_message
+    change_text = event_message
 
     # Сделать отдельную функцию по отработке фильтров. Аля удаление слов, удаление текста. Не постить вообще
     # Удаляем теги, предложения (Если удаляется предложение, и с ним целый абзац). Нужно додумать, как удалять именно слова либо только 1 предложение
@@ -59,34 +61,34 @@ def correction_text(event_message):
 
         # 1.1 Сделал двойную проверку.
         # 1.2 При первой проверке удаляется слово с пробелами. если их больше 1 после окончания текста.
-        if delete_word[word] in pasring_text.message:
+        if delete_word[word] in change_text.message:
 
             # 2.1 Пытаемся получить массив из найденных слов
             try:
-                pasring_text.message = pasring_text.message.replace(
-                    re.findall(fr"(.*?{delete_word[word]}.+\s+)", pasring_text.message)[0], "")
+                change_text.message = change_text.message.replace(
+                    re.findall(fr"(.*?{delete_word[word]}.+\s+)", change_text.message)[0], "")
 
                 # 1.3 Но может быть такое, что пробел действительно только 1.
                 # 1.4 Тогда если первой не прошёл, проходит вторая и удаляет лишний пробел после текста
-                if delete_word[word] in pasring_text.message:
-                    pasring_text.message = pasring_text.message.replace(
-                        re.findall(fr"(.*?{delete_word[word]}.+)", pasring_text.message)[0], "")
+                if delete_word[word] in change_text.message:
+                    change_text.message = change_text.message.replace(
+                        re.findall(fr"(.*?{delete_word[word]}.+)", change_text.message)[0], "")
 
             # 2.2 Но если слово одно и массив не сформирован, ловим исключение и обрабатываем
             except:
-                if delete_word[word] in pasring_text.message:
-                    pasring_text.message = pasring_text.message.replace(
-                        re.findall(fr"(.*?{delete_word[word]}.+)", pasring_text.message)[0], "")
+                if delete_word[word] in change_text.message:
+                    change_text.message = change_text.message.replace(
+                        re.findall(fr"(.*?{delete_word[word]}.+)", change_text.message)[0], "")
 
     # print(pasring_text.message) # Для дебага сообщений
 
     # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион
     for i in emoji.UNICODE_EMOJI['en']:
-        if i in pasring_text.message:
-            pasring_text.message = pasring_text.message.replace(f"{i} ", "")
+        if i in change_text.message:
+            change_text.message = change_text.message.replace(f"{i} ", "")
             break
 
-    return pasring_text
+    return change_text
 
 
 # Срабатывает на сообщения и на сообщения с фото 1.
@@ -124,9 +126,16 @@ async def parsing_new_message(event):
         #             print("событие на мои сообщения\n")
         #             break
 
-    pasring_text = correction_text(event.message)
+    pasring_text = event.message
+    pasring_text = correction_text(pasring_text)
+
     # print(pasring_text.message)  # Для дебага сообщений
-    # pasring_text = await rewrite(pasring_text.message)
+
+    # Обращение к GPT
+    if 5 < len(pasring_text.message) < 1024:
+        pasring_text.message = await rewrite(pasring_text.message)
+    else:
+        pass
 
     if event.grouped_id:
         return  # ignore messages that are gallery here
@@ -144,7 +153,7 @@ async def parsing_new_message(event):
 # Копирует и пересылает фото не разделяя их на разные сообщения. Срабатывает, если фоток больше чем 1
 @client.on(events.Album(chats=channel_from_pars))
 async def parsing_almun(event):
-    print("Сработал Album\n")
+    # print("Сработал Album\n")
 
     # Если отправляется альбом, в первом объекте сообщения может не быть, делаем проверку
     if not event.original_update.message.message:
