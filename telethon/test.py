@@ -1,97 +1,34 @@
-from Examples.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
-from telethon import TelegramClient, events
+from additional_files.notNeededWords import DELETE_TEXT, STOP_POST
 
-import time
-import logging
+text = """ Причина успеха Palworld проста — я прохожу акушерство и просто не ебу.
 
-logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.WARNING)
+🐤 8 миллионов проданных (https://t.me/InYouEyes/46992) копий Palworld
+📨 Приговор смертной (https://t.me/InYouEyes/46994) казни
+🗺️ Смута исторически (https://t.me/InYouEyes/46995) достоверна
+🧳 Настольный дайджест (https://t.me/InYouEyes/46996)
+🌐 Обои (https://t.me/InYouEyes/46997) по Persona 3 Reload
+📊 Microsoft стали (https://t.me/InYouEyes/46999) еще дороже и уволили (https://t.me/InYouEyes/47005) сотрудников
+🔮 Чудо-маркетинг в сети (https://t.me/InYouEyes/47003)
+📄 В People Can Fly прошли (https://t.me/InYouEyes/47004) сокращения 
+🔦 Глава Blizzard покидает (https://t.me/InYouEyes/47006) свой пост
+🔖 График выпуска (https://t.me/InYouEyes/47007) Call of Duty
+🌌 Свежая халява (https://t.me/InYouEyes/47008) EGS
+🕹️ Horizon Forbidden West в марте выйдет (https://t.me/InYouEyes/47009) на ПК
+🏝️ Поддержка (https://t.me/InYouEyes/47010) Skull and Bones в первый год после выхода
+⛰️ Изменения (https://t.me/InYouEyes/47012) в работе App Store
+💙 «Довод» перевыпустят (https://t.me/InYouEyes/47013) в феврале
 
-"""
-Парсим сообщение. Переселываем в канал
+🧿 Прошлая Ежедневная (https://t.me/InYouEyes/46991)
 
-Задачи:
-1. Чтобы скрипт работал пока не отключу сам.
+👨‍👩‍👧‍👦 Подпишись на семью (https://t.me/addlist/_hIMhrWiYXQ5ZTI6)
+💰 Поддержи канал (https://boosty.to/inyoureyes)
 
-2. Если скрипт будет активен постоянно, обдумать, как запускать процесс парсинга при новых сообщениях
-(т.е иными словами, чтобы не получилось так, что парситься одно и тоже сообщение)
+#inyoureyesdaily"""
 
-3. Обдумать процесс по количеству парсинга сообщений (лимит) (вообще нужен ли)
-
-4. last upd - не совсем корректно работает, может отправить картинку несколько раз, разобаться
-"""
-
-api_id = API_ID
-api_hash = API_HASH
-client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
-
-channel_test = CHANNEL_TEST
-channel_PL = CHANNEL_PL
-
-# @client.on(events.NewMessage(chats='me'))
-# async def handler(event):
-#     print("message")
-#     if event.grouped_id:
-#         return    # ignore messages that are gallery here
+# for i in range(len(STOP_POST)):
+#     if STOP_POST[i] in text.lower():
+#         print("Слово присутствует")
+#         break
 #
-#     await client.send_message(channel_test, event.message)
-
-# Добавил обработчик событый, указал, что нужно реагировать, если приходят новые сообщения из channel_test
-@client.on(events.Album(chats='me'))
-async def handler(event):
-    print("albom")
-    pasring_photos = []  # Сюда можно положить несколько фото и разом отправить в client.send_file
-    pasring_text = []
-    unique_photo_hashes = set()  # нужен на провеку уникольности фото (т.к фотки могут повторяться
-
-    # Получаем последние сообщения Лимит показывает отправленные объекты. Т.е в телеге может быть 1 сообщение,
-    # у него есть 2 фото и текст. Это 3 разных объекта Далее работается также как и с get_message
-    #
-    # Если фото присутстует, добавить в массив, иначе ничего не делать
-    if event.original_update.message.photo is not None:
-        print('1 шаг - фото присутствует')
-        hash_photo = event.original_update.message.id
-
-        # Проверка, чтобы не добавлять дубли фоток
-        if hash_photo not in unique_photo_hashes:
-            pasring_photos.append(event.original_update.message.photo)
-            unique_photo_hashes.add(hash_photo)
-        else:
-            print("Присутсвует дубль/дубли фото")
-
-        # проверка, что сообщение не пустое
-        if event.original_update.message.message != '':
-            print('2 шаг - Сообщение не пустое')
-
-            # Если текст не пустой, добавить в массив
-            pasring_text.append(event.original_update.message.message)
-
-    else:
-        print('3 шаг - Фото отсутсвует, сообщение не пустое')
-        if event.message != '':
-            pasring_text.append(event.original_update.message.message)
-
-
-    if not pasring_photos:
-        print("\nОтправляет сообщение. Фото отсутсвуют, только текст")
-        print(f"Текст - {pasring_text[0]}\n")
-        await client.send_message(channel_test, message=event.original_update.message.message)
-
-    elif not pasring_text:
-        print("\nОтправляет сообщение. Только фото, текст отсутсвует")
-        await client.send_file(channel_test, pasring_photos, caption='')
-
-    else:
-        print("\nОтправляет сообщение. Фото и текст")
-        print(f"фото и Текст - {pasring_text[0]}\n")
-        await client.send_file(channel_test, pasring_photos, caption=pasring_text[0])  # caption = подпись = message
-
-        pasring_text.clear()
-        pasring_photos.clear()
-        unique_photo_hashes.clear()
-
-    print("Done\n")
-    time.sleep(5)
-    print("sleep is compliet!")
-
-client.start()
-client.run_until_disconnected()
+#     else:
+#         print("Слово отсутсвует")

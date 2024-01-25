@@ -1,5 +1,5 @@
-DELETE_TEXT = ["#", "vk", "t.me"]
+DELETE_TEXT = ["#", "vk", "t.me", "Free Gaming."]
 
-STOP_POST = ["Подпишись на", "дарим", "Конкурс", "Розыгрыш",]
+STOP_POST = ["дарим", "конкурс", "подпишись", "подписаться", "розыгрыш",]
 
 DELETE_TEXT_SPECIFIC_WORDS = []

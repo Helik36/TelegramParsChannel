@@ -1,12 +1,11 @@
-from additional_files.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, NAMES_CHANNEL
+from additional_files.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, \
+    NAMES_CHANNEL
 from additional_files.notNeededWords import DELETE_TEXT, STOP_POST
-from chatGPT import rewrite
 import telethon
 import re
 from telethon import TelegramClient, events
-import emoji #  pip install emoji==1.7
+import emoji  # pip install emoji==1.7
 import logging
-
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
@@ -38,20 +37,23 @@ upd - Такое ощущение, что это не всегда так. Ин�
 
 1. Придумать задачи
 
-2. После получения события, забирать сообщение, немного изменять его (chatgpt), и отправлять
-upd: для chatgpt нужны токены чтобы использовать API. Подумать или найти другие варианты
+2. Поправить фильтр. Сейчас если есть абзац и в нём 2 предложения, даже если 1, удаляются оба.
 
 3. Обдумать добавление тегов
 
-4. Поправить фильтр. Сейчас если есть абзац и в нём 2 предложения, даже если 1, удаляются оба.
-4.1. Фильтр, по котором пост вообще не будет выкладываться
+4. Обдумать добавление базы
 
-5. Обдумать добавление базы
+5. Обдумать добавление взаимодействия с ботом, чтобы был как админ-панель
 
-6. Обдумать добавление взаимодействия с ботом, чтобы был как админ-панель
+6. Добавить ручки включения/выключения - Удалить смайлики, удалить ссылки и т.п
 
-7. Добавить ручки включения/выключения - Удалить смайлики, удалить ссылки и т.п
+"""
 
+"""
+Решил отложить 
+
+Взаимодействие с GPT. Добавить либо потом, когда закончу остальные задачи, либо вообще не добавлять.
+Если буду добавлять, обдумать промт, траты токенов и вообще логику взаимодействия
 """
 
 api_id = API_ID
@@ -64,10 +66,10 @@ channel_from_pars = CHANNEL_FROM_PARS
 
 # Массив по которым будут удаляться ненужные слова или текст или вообще не выкладываться. Перенести в другой файл
 delete_word = DELETE_TEXT
+stop_post = STOP_POST
 
 
 def correction_text(event_message):
-
     change_text = event_message
 
     # Сделать отдельную функцию по отработке фильтров. Аля удаление слов, удаление текста. Не постить вообще
@@ -105,12 +107,23 @@ def correction_text(event_message):
 
     return change_text
 
-# Срабатывает на сообщения и на сообщения с фото 1.
-@client.on(events.NewMessage(chats=channel_from_pars))
-async def parsing_new_message(event):
 
-    print(event.message) # Дебаг
-    print(event.message.message)  # Дебаг
+# Проверка, что если присутствует слово, пост игнорируется
+async def filter_text(event):
+    for word in stop_post:
+        if word in event.message.message.lower():
+            print(f"стоп слово {word}")
+            return False
+    return True
+
+
+# Срабатывает на сообщения и на сообщения с фото 1.
+#  forwards=False - Не реагировать на пересылаемые сообщения
+# func=filter_text - Фильтр на стоп слово. Своеобразный ручной фильтр func
+@client.on(events.NewMessage(chats=channel_from_pars, func=filter_text))
+async def parsing_new_message(event):
+    # print(event.message) # Дебаг
+    # print(event.message.message)  # Дебаг
 
     # Дебаг, на какой канал сработало событие
     # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
@@ -118,16 +131,12 @@ async def parsing_new_message(event):
     if event.message.message != "":
         if hasattr(event.message.peer_id, "channel_id"):
             if int(f"-100{event.message.peer_id.channel_id}") in list(NAMES_CHANNEL):
-                print(NAMES_CHANNEL[int(f"-100{event.message.peer_id.channel_id}")]) # Тут словарь
+                print(NAMES_CHANNEL[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
 
     pasring_text = event.message
     pasring_text = correction_text(pasring_text)
 
     # print(pasring_text.message)   # Дебаг
-
-    # Обращение к GPT
-    if 5 < len(pasring_text.message) < 1024:
-        pasring_text.message = await rewrite(pasring_text.message)
 
     if event.grouped_id:
         return  # ignore messages that are gallery here
