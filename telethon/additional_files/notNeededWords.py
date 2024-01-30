@@ -18,11 +18,19 @@ def createbase():
     # cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", ("asda",))
     # conn.commit()
 
-    # data = ["#", "vk", "t.me", "Free Gaming"]
-    # for word in data:
-    #     cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", [word]) # можно ещё как (word, )
-    #     conn.commit()
-    # conn.close()
+    data = ["#", "vk", "t.me", "Free Gaming"]
+    for word in data:
+        cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", [word]) # можно ещё как (word, )
+        conn.commit()
+
+    cursor.execute("SELECT * FROM delete_text")
+    data = cursor.fetchall()
+    for word in data:
+        print(word[1])
+
+    # cursor.execute("DROP TABLE IF EXISTS delete_text")
+    # conn.commit()
+    conn.close()
 
 
 

@@ -8,6 +8,7 @@ from telethon import TelegramClient, events
 import emoji  # pip install emoji==1.7
 import logging
 import asyncio
+import sqlite3
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
@@ -176,14 +177,31 @@ async def start_bot():
 
 
 async def my_def():
+    conn = sqlite3.connect("database\\DBnotNeededWords.db")
+    cursor = conn.cursor()
+
     while True:
         user_input = await asyncio.to_thread(input, "Введи пароль: ")
         if user_input == "check":
             print("pass")
+
+            cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", [user_input])
+            conn.commit()
+
+            cursor.execute("SELECT * FROM delete_text")
+            data = cursor.fetchall()
+            print(data)
+            
+            conn.close()
+
         elif user_input == "exit":
             break
+
         else:
             print("not ")
+
+
+
 
 
 async def main():
