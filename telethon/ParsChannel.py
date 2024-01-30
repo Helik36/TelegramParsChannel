@@ -1,5 +1,3 @@
-import asyncio
-
 from additional_files.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, \
     NAMES_CHANNEL
 
@@ -9,6 +7,7 @@ import re
 from telethon import TelegramClient, events
 import emoji  # pip install emoji==1.7
 import logging
+import asyncio
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
@@ -170,17 +169,34 @@ async def parsing_almun(event):
         await client.send_file(channel_PL, event.messages, caption=caption)
 
 
-async def my_def():
+async def start_bot():
+    # Запуск бота в асинхронном режиме
+    await client.start()
+    await client.run_until_disconnected()
 
-    if input("Введи пароль: ") == "check":
-        print("pass")
+
+async def my_def():
+    while True:
+        user_input = await asyncio.to_thread(input, "Введи пароль: ")
+        if user_input == "check":
+            print("pass")
+        elif user_input == "exit":
+            break
+        else:
+            print("not ")
+
+
+async def main():
+    task1 = asyncio.create_task(start_bot())
+    task2 = asyncio.create_task(my_def())
+
+    tasks = [task1, task2]
+
+    try:
+        await asyncio.gather(*tasks)
+    except:
+        KeyboardInterrupt()
+
 
 if __name__ == "__main__":
-
-    client.start()
-    asyncio.run(my_def())
-    client.run_until_disconnected()
-
-
-
-
+    asyncio.run(main())
