@@ -2,7 +2,6 @@ import sqlite3
 
 
 def createbase():
-
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -21,8 +20,9 @@ def createbase():
     """)
     conn.commit()
 
-def append_delete_text():
 
+# Добавить текст в БД для удаления из поста
+def append_delete_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -32,12 +32,12 @@ def append_delete_text():
 
     data = ["#", "vk", "t.me", "Free Gaming"]
     for word in data:
-        cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [word]) # можно ещё как (word, )
+        cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [word])  # можно ещё как (word, )
         conn.commit()
 
     data = ["дарим", "конкурс", "подпишись", "подписаться", "розыгрыш"]
     for word in data:
-        cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [word]) # можно ещё как (word, )
+        cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [word])  # можно ещё как (word, )
         conn.commit()
 
     # cursor.execute("SELECT * FROM delete_text")
@@ -48,7 +48,9 @@ def append_delete_text():
     # cursor.execute("DROP TABLE IF EXISTS delete_text")
     conn.close()
 
-async def append_delete_text_from_cmd(text):
+
+# Добавить текст в БД для удаления из поста
+def append_in_db_delete_text_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -58,7 +60,8 @@ async def append_delete_text_from_cmd(text):
     conn.close()
     return print(f" {text} добавлен")
 
-def append_stop_pots_from_cmd(text):
+# Добавить фильтр в БД для стоп слова
+def append_in_db_stop_pots_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -67,7 +70,8 @@ def append_stop_pots_from_cmd(text):
 
     conn.close()
 
-async def delete_from_db_delete_text_from_cmd(text):
+# Удалить из бд фильтр для удления из поста
+def delete_from_db_delete_text_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -78,7 +82,20 @@ async def delete_from_db_delete_text_from_cmd(text):
     return print(f" {text} Удалён")
 
 
-def get_delete_text():
+# Удалить из бд фильтр стоп-пост
+def delete_from_db_text_stop_post_from_cmd(text):
+    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM dbstop_post WHERE text_stop_post_trigger = ?", [text])
+    conn.commit()
+
+    conn.close()
+    return print(f" {text} Удалён")
+
+
+# Показать фильтр для удаления текста из поста
+def get_from_db_delete_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -87,7 +104,9 @@ def get_delete_text():
     conn.close()
     return get_text
 
-def get_stop_post_text():
+
+# Показать фильтры по стоп-посту
+def get_from_db_stop_post_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -95,8 +114,6 @@ def get_stop_post_text():
 
     conn.close()
     return get_text
-
-
 
 
 if __name__ == "__main__":

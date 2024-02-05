@@ -1,7 +1,7 @@
 import sqlite3
 from additional_files.notNeededWords import DELETE_TEXT
 
-conn = sqlite3.connect('database\\DBnotNeededWords.db')
+conn = sqlite3.connect('../database/DBnotNeededWords.db')
 cursor = conn.cursor()
 
 var_mass = []
