@@ -1,6 +1,6 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, filters
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 from actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
     delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, get_from_db_delete_text, \
@@ -17,6 +17,8 @@ logging.basicConfig(
 
 id_channel_pasring = ID_CHANNEL_ID
 app = Application.builder().token(token_bot).build()
+
+ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST = range(4)
 
 """
 Задача на следующую работу написаны не по порядку (Если не появяться какие-либо вытекающие):
@@ -35,10 +37,8 @@ app = Application.builder().token(token_bot).build()
 5) Залить на хост [upd: нужен VPS]
 
 6) Доделать логирование
-
-7) Добавить массив, куда можно добавлять id канал, от куда потом в другой функции они будут считываться и парситься
 """
-ASD = range(1)
+
 
 # Получаю информацию о пооследнем собщении от себя и копирую в канал
 # Копирование происходит с вложениями и эффектами на них
@@ -53,37 +53,101 @@ async def parsing_channel(update: Update, context):
         await context.bot.copyMessage(my_channel_id, my_id, update.message.message_id)
 
 
-async def  hundler_add_filter_delete_text(update, context):
+async def hundler_add_filter_delete_text(update, context):
     user_input = update.message.text
-    print(user_input)
+    await append_in_db_delete_text_from_cmd(user_input)
+    await update.message.reply_text("Фильтр на удаление текста добавлен")
+    return ConversationHandler.END
+
+
+async def hundler_add_filter_stop_post(update, context):
+    user_input = update.message.text
+    await append_in_db_stop_pots_from_cmd(user_input)
+    await update.message.reply_text("Фильтр стоп-пост добавлен")
+    return ConversationHandler.END
+
+
+async def hundler_delete_filter_delete_text(update, context):
+    user_input = update.message.text
+    text = [text for text in await get_from_db_delete_text()]
+
+    if user_input.isdigit():
+        await delete_from_db_delete_text_from_cmd(text[int(user_input) - 1])
+        await update.message.reply_text("Фильтр на удаление текста удалён")
+        await get_filter_delete_text(update, context)
+
+        return ConversationHandler.END
+
+    else:
+        await delete_from_db_delete_text_from_cmd(user_input)
+        await update.message.reply_text("Фильтр на удаление текста удалён")
+        await get_filter_delete_text(update, context)
+
+        return ConversationHandler.END
+
+
+
+async def hundler_delete_filter_stop_post(update, context):
+    user_input = update.message.text
+    await delete_from_db_text_stop_post_from_cmd(user_input)
+    text = [text for text in await get_from_db_delete_text()]
+
+    if user_input.isdigit():
+        await delete_from_db_text_stop_post_from_cmd(text[int(user_input) - 1])
+        await update.message.reply_text("Фильтр на удаление текста удалён")
+        await get_filter_stop_post(update, context)
+
+        return ConversationHandler.END
+
+    else:
+        await delete_from_db_text_stop_post_from_cmd(user_input)
+        await update.message.reply_text("Фильтр на удаление текста удалён")
+        await get_filter_stop_post(update, context)
+
+        return ConversationHandler.END
 
 
 async def add_filter_delete_text(update, context):
     await update.message.reply_text("Напиши текст, который нужно добвить как фильтр для удаления из поста")
     # переходим к этапу
-    return ASD
-
+    return ADD_TEXT
 
 
 async def add_filter_stop_post(update, context):
-    pass
+    await update.message.reply_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
+    # переходим к этапу
+    return ADD_STOP_POST
 
 
 async def get_filter_delete_text(update, context):
-    # await update.message.reply_text("qwe")
-    await update.message.reply_text(get_from_db_delete_text())
+    reply_message = ""
+    text = [text for text in await get_from_db_delete_text()]
+    for i in range(len(text)):
+        reply_message += f"{i+1}) {text[i]}\n"
+
+    await update.message.reply_text(reply_message)
 
 
 async def get_filter_stop_post(update, context):
-    await update.message.reply_text(get_from_db_stop_post_text())
+    reply_message = ""
+    text = [text for text in await get_from_db_stop_post_text()]
+    for i in range(len(text)):
+        reply_message += f"{i+1}) {text[i]}\n"
+
+    await update.message.reply_text(reply_message)
 
 
 async def delete_filter_delete_text(update, context):
-    pass
+    await update.message.reply_text("Напиши фильтр удаления из поста который нужно убрать из БД")
+    # переходим к этапу
+    return DELETE_TEXT
 
 
 async def delete_filter_stop_post(update, context):
-    pass
+    await update.message.reply_text("Напиши фильтр стоп-пост, который нужно убрать из БД")
+    # переходим к этапу
+    return DELETE_STOP_POST
+
 
 def main():
     # app = Application.builder().token(token_bot).build()
@@ -93,23 +157,23 @@ def main():
     2) Этапы разговора
     3) Точку выхода из разговора
     """
+
     app.add_handler(ConversationHandler(
-        entry_points=[CommandHandler("add_filter_delete_text", add_filter_delete_text)],
+        entry_points=[CommandHandler("add_filter_delete_text", add_filter_delete_text),
+                      CommandHandler("add_filter_stop_post", add_filter_stop_post),
+                      CommandHandler("del_filter_delete_text", delete_filter_delete_text),
+                      CommandHandler("del_filter_stop_post", delete_filter_stop_post)],
         states={
-            ASD: [MessageHandler(filters.TEXT, hundler_add_filter_delete_text)]
+            ADD_TEXT: [MessageHandler(filters.TEXT, hundler_add_filter_delete_text)],
+            ADD_STOP_POST: [MessageHandler(filters.TEXT, hundler_add_filter_stop_post)],
+            DELETE_TEXT: [MessageHandler(filters.TEXT, hundler_delete_filter_delete_text)],
+            DELETE_STOP_POST: [MessageHandler(filters.TEXT, hundler_delete_filter_stop_post)]
         },
         fallbacks=[]
     ))
 
-    app.add_handler(CommandHandler("add_filter_stop_post", add_filter_stop_post))
     app.add_handler(CommandHandler("get_filter_delete_text", get_filter_delete_text))
     app.add_handler(CommandHandler("get_filter_stop_post", get_filter_stop_post))
-    app.add_handler(CommandHandler("delete_filter_delete_text", delete_filter_delete_text))
-    app.add_handler(CommandHandler("delete_filter_stop_post", delete_filter_stop_post))
-
-
-    # Пересылает сообщения
-    # app.add_handler(MessageHandler(filters.ALL & (~filters.COMMAND), parsing_channel))
 
     app.run_polling()
 

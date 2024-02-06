@@ -1,6 +1,6 @@
-from actionWithDB import append_delete_text_from_cmd, append_stop_pots_from_cmd, get_delete_text, get_stop_post_text, delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd
+from actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, get_from_db_delete_text, get_from_db_stop_post_text, delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd
 
-from additional_files.notNeededWords import upd_delete_text, STOP_POST
+from additional_files.notNeededWords import upd_delete_text
 import telethon
 import re
 from telethon import TelegramClient, events
@@ -43,38 +43,30 @@ async def input_cmd():
         elif user_input == "/add_delete_text" or  user_input == "/1":
 
             user_input2 = await asyncio.to_thread(input, "Введите текст, который нужно убирать из поста: ")
-            await append_delete_text_from_cmd(user_input2)
-
-            delete_word = upd_delete_text() # нужно постоянно обновлять переменную или просто
-
-            print(get_delete_text())
-            print(upd_delete_text())
+            await append_in_db_delete_text_from_cmd(user_input2)
+            print(await get_from_db_delete_text())
 
         # Добавить тексть в базу для стоп пост
         elif user_input == "/add_text_stop_post" or  user_input == "/2":
 
             user_input2 = await asyncio.to_thread(input, "Введите текст для стоп слова: ")
-            await append_stop_pots_from_cmd(user_input2)
-
-            delete_word = upd_delete_text() # нужно постоянно обновлять переменную или просто
+            await append_in_db_stop_pots_from_cmd(user_input2)
+            print(await get_from_db_stop_post_text())
 
         # Посмотреть текущие предложения на удаление
         elif user_input == "/del_from_db_text" or  user_input == "/3":
-
-            print(f"Текущие фильтры для удаления {get_delete_text()}")
+            print(f"Текущие фильтры для удаления {await get_from_db_delete_text()}")
 
         # Посмотреть текущие предложения на удаление
         elif user_input == "/get_text_stop_post" or  user_input == "/4":
-
-            print(f"Текущие фильтры для стоп-пост: {get_stop_post_text()}")
+            print(f"Текущие фильтры для стоп-пост: {await get_from_db_stop_post_text()}")
 
         # Удалить из БД триггер
         elif user_input == "/del_from_db_text" or  user_input == "/5":
 
             user_input2 = await asyncio.to_thread(input, "Что нужно удалить из базы: ")
             await delete_from_db_delete_text_from_cmd(user_input2)
-
-            print(get_delete_text())
+            print(await get_from_db_delete_text())
 
         # Удалить из БД триггер
         elif user_input == "/del_text_stop_post" or  user_input == "/6":
@@ -82,7 +74,7 @@ async def input_cmd():
             user_input2 = await asyncio.to_thread(input, "Что нужно удалить из базы: ")
             await delete_from_db_text_stop_post_from_cmd(user_input2)
 
-            print(get_delete_text())
+            print(await get_from_db_stop_post_text())
 
         elif user_input == "exit":
             break

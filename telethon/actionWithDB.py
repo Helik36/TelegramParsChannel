@@ -50,7 +50,7 @@ def append_delete_text():
 
 
 # Добавить текст в БД для удаления из поста
-def append_in_db_delete_text_from_cmd(text):
+async def append_in_db_delete_text_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -58,10 +58,10 @@ def append_in_db_delete_text_from_cmd(text):
     conn.commit()
 
     conn.close()
-    return print(f" {text} добавлен")
+    return print(f"Фильтр `{text}`  для удаления из поста - добавлен")
 
 # Добавить фильтр в БД для стоп слова
-def append_in_db_stop_pots_from_cmd(text):
+async def append_in_db_stop_pots_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -69,9 +69,10 @@ def append_in_db_stop_pots_from_cmd(text):
     conn.commit()
 
     conn.close()
+    return print(f"Фильтр `{text}`  для стоп-пост - добавлен")
 
 # Удалить из бд фильтр для удления из поста
-def delete_from_db_delete_text_from_cmd(text):
+async def delete_from_db_delete_text_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -79,11 +80,11 @@ def delete_from_db_delete_text_from_cmd(text):
     conn.commit()
 
     conn.close()
-    return print(f" {text} Удалён")
+    return print(f"Фильтр `{text}` удалён")
 
 
 # Удалить из бд фильтр стоп-пост
-def delete_from_db_text_stop_post_from_cmd(text):
+async def delete_from_db_text_stop_post_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -91,11 +92,11 @@ def delete_from_db_text_stop_post_from_cmd(text):
     conn.commit()
 
     conn.close()
-    return print(f" {text} Удалён")
+    return print(f"Фильтр `{text}` Удалён")
 
 
 # Показать фильтр для удаления текста из поста
-def get_from_db_delete_text():
+async def get_from_db_delete_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -106,7 +107,7 @@ def get_from_db_delete_text():
 
 
 # Показать фильтры по стоп-посту
-def get_from_db_stop_post_text():
+async def get_from_db_stop_post_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
     cursor = conn.cursor()
 

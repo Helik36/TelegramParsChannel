@@ -1,8 +1,7 @@
-from telethon.tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, \
-    NAMES_CHANNEL
+from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, NAMES_CHANNEL
 from async_cmd import input_cmd
 
-from additional_files.notNeededWords import upd_delete_text, STOP_POST
+from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 import telethon
 import re
 from telethon import TelegramClient, events
@@ -71,12 +70,10 @@ channel_from_pars = CHANNEL_FROM_PARS
 
 # Массив по которым будут удаляться ненужные слова или текст или вообще не выкладываться. Перенести в другой файл
 # delete_word = upd_delete_text()
-stop_post = STOP_POST
 
 
 def correction_text(event_message):
     delete_word = upd_delete_text()
-    print(delete_word)
     change_text = event_message
 
     # Сделать отдельную функцию по отработке фильтров. Аля удаление слов, удаление текста. Не постить вообще.
@@ -125,7 +122,7 @@ def correction_text(event_message):
 
 # Проверка, что если присутствует слово, пост игнорируется
 async def filter_text(event):
-    for word in stop_post:
+    for word in upd_stop_post():
         if word in event.message.message.lower():
             print(f"стоп слово {word}")
             return False
