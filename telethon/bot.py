@@ -1,10 +1,10 @@
 import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
-from actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
-    delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, get_from_db_delete_text, \
-    get_from_db_stop_post_text
+from actionWithBot import hundler_add_filter_delete_text, hundler_add_filter_stop_post, \
+    hundler_delete_filter_delete_text, hundler_delete_filter_stop_post, add_filter_delete_text, add_filter_stop_post, \
+    get_filter_delete_text, get_filter_stop_post, delete_filter_delete_text, delete_filter_stop_post
 
 token_bot = TOKEN
 my_id = MY_ID
@@ -18,7 +18,7 @@ logging.basicConfig(
 id_channel_pasring = ID_CHANNEL_ID
 app = Application.builder().token(token_bot).build()
 
-ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST = range(4)
+BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST = range(8)
 
 """
 Задача на следующую работу написаны не по порядку (Если не появяться какие-либо вытекающие):
@@ -40,113 +40,85 @@ ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST = range(4)
 """
 
 
-# Получаю информацию о пооследнем собщении от себя и копирую в канал
-# Копирование происходит с вложениями и эффектами на них
-async def parsing_channel(update: Update, context):
-    print(update.message)
-    print(update.message.chat_id)
 
-    # Проверяю, что Id совпадает с моим. Если нет, отказ в доступе
-    if update.message.chat.id != my_id:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Access Denied")
-    else:
-        await context.bot.copyMessage(my_channel_id, my_id, update.message.message_id)
+"""
+Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
+красивое и изменяемой сообщение, которое выводит бот
+"""
 
+async def button(update, _):
+    query = update.callback_query
+    variant = query.data
 
-async def hundler_add_filter_delete_text(update, context):
-    user_input = update.message.text
-    await append_in_db_delete_text_from_cmd(user_input)
-    await update.message.reply_text("Фильтр на удаление текста добавлен")
+    # `CallbackQueries` требует ответа, даже если
+    # уведомление для пользователя не требуется, в противном
+    #  случае у некоторых клиентов могут возникнуть проблемы.
+    await query.answer()
+    print(variant)
+
+    if variant == "ADD_TEXT":
+        await add_filter_delete_text(update, _)
+        return ADD_TEXT
+
+    elif variant == "ADD_STOP_POST":
+        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
+        return ADD_STOP_POST
+
+    elif variant == "CHECK_TEXT":
+        await get_filter_delete_text(update, _)
+        return BACK
+
+    elif variant == "CHECK_STOP_POST":
+        await get_filter_stop_post(update, _)
+        return BACK
+
+    elif variant == "DELETE_TEXT":
+        await delete_filter_delete_text(update, _)
+        return DELETE_TEXT
+
+    elif variant == "DELETE_STOP_POST":
+        await delete_filter_stop_post(update, _)
+        return DELETE_STOP_POST
+
     return ConversationHandler.END
 
+# Вызывается по команде
+async def start(update, _):
+    keyboard = [
+        [InlineKeyboardButton("Добавить фильтр - удаление текста", callback_data='ADD_TEXT')],
+        [InlineKeyboardButton("Добавить фильтр - стоп-пост", callback_data='ADD_STOP_POST')],
+        [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
+        [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
+        [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
+        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    # для версии 20.x необходимо использовать оператор await
+    await update.message.reply_text('Пожалуйста, выберите:', reply_markup=reply_markup)
 
-async def hundler_add_filter_stop_post(update, context):
-    user_input = update.message.text
-    await append_in_db_stop_pots_from_cmd(user_input)
-    await update.message.reply_text("Фильтр стоп-пост добавлен")
-    return ConversationHandler.END
+    return BUTTON
 
+# Вызывается когда нажимается кнопка Назад
+async def back(update, _):
 
-async def hundler_delete_filter_delete_text(update, context):
-    user_input = update.message.text
-    text = [text for text in await get_from_db_delete_text()]
+    query = update.callback_query
+    await query.answer()
 
-    if user_input.isdigit():
-        await delete_from_db_delete_text_from_cmd(text[int(user_input) - 1])
-        await update.message.reply_text("Фильтр на удаление текста удалён")
-        await get_filter_delete_text(update, context)
+    keyboard = [
+        [InlineKeyboardButton("Добавить фильтр - удаление текста", callback_data='ADD_TEXT')],
+        [InlineKeyboardButton("Добавить фильтр - стоп-пост", callback_data='ADD_STOP_POST')],
+        [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
+        [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
+        [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
+        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query = update.callback_query
+    await query.answer()
 
-        return ConversationHandler.END
+    await query.edit_message_text('Пожалуйста, выберите:', reply_markup=reply_markup)
 
-    else:
-        await delete_from_db_delete_text_from_cmd(user_input)
-        await update.message.reply_text("Фильтр на удаление текста удалён")
-        await get_filter_delete_text(update, context)
-
-        return ConversationHandler.END
-
-
-
-async def hundler_delete_filter_stop_post(update, context):
-    user_input = update.message.text
-    await delete_from_db_text_stop_post_from_cmd(user_input)
-    text = [text for text in await get_from_db_delete_text()]
-
-    if user_input.isdigit():
-        await delete_from_db_text_stop_post_from_cmd(text[int(user_input) - 1])
-        await update.message.reply_text("Фильтр на удаление текста удалён")
-        await get_filter_stop_post(update, context)
-
-        return ConversationHandler.END
-
-    else:
-        await delete_from_db_text_stop_post_from_cmd(user_input)
-        await update.message.reply_text("Фильтр на удаление текста удалён")
-        await get_filter_stop_post(update, context)
-
-        return ConversationHandler.END
-
-
-async def add_filter_delete_text(update, context):
-    await update.message.reply_text("Напиши текст, который нужно добвить как фильтр для удаления из поста")
-    # переходим к этапу
-    return ADD_TEXT
-
-
-async def add_filter_stop_post(update, context):
-    await update.message.reply_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
-    # переходим к этапу
-    return ADD_STOP_POST
-
-
-async def get_filter_delete_text(update, context):
-    reply_message = ""
-    text = [text for text in await get_from_db_delete_text()]
-    for i in range(len(text)):
-        reply_message += f"{i+1}) {text[i]}\n"
-
-    await update.message.reply_text(reply_message)
-
-
-async def get_filter_stop_post(update, context):
-    reply_message = ""
-    text = [text for text in await get_from_db_stop_post_text()]
-    for i in range(len(text)):
-        reply_message += f"{i+1}) {text[i]}\n"
-
-    await update.message.reply_text(reply_message)
-
-
-async def delete_filter_delete_text(update, context):
-    await update.message.reply_text("Напиши фильтр удаления из поста который нужно убрать из БД")
-    # переходим к этапу
-    return DELETE_TEXT
-
-
-async def delete_filter_stop_post(update, context):
-    await update.message.reply_text("Напиши фильтр стоп-пост, который нужно убрать из БД")
-    # переходим к этапу
-    return DELETE_STOP_POST
+    return BUTTON
 
 
 def main():
@@ -159,11 +131,16 @@ def main():
     """
 
     app.add_handler(ConversationHandler(
-        entry_points=[CommandHandler("add_filter_delete_text", add_filter_delete_text),
+        entry_points=[CommandHandler("start", start),
+                      CommandHandler("add_filter_delete_text", add_filter_delete_text),
                       CommandHandler("add_filter_stop_post", add_filter_stop_post),
+                      CommandHandler("get_filter_delete_text", get_filter_delete_text),
+                      CommandHandler("get_filter_stop_post", get_filter_stop_post),
                       CommandHandler("del_filter_delete_text", delete_filter_delete_text),
                       CommandHandler("del_filter_stop_post", delete_filter_stop_post)],
         states={
+            BUTTON: [CallbackQueryHandler(button)],
+            BACK: [CallbackQueryHandler(back)],
             ADD_TEXT: [MessageHandler(filters.TEXT, hundler_add_filter_delete_text)],
             ADD_STOP_POST: [MessageHandler(filters.TEXT, hundler_add_filter_stop_post)],
             DELETE_TEXT: [MessageHandler(filters.TEXT, hundler_delete_filter_delete_text)],
@@ -171,9 +148,6 @@ def main():
         },
         fallbacks=[]
     ))
-
-    app.add_handler(CommandHandler("get_filter_delete_text", get_filter_delete_text))
-    app.add_handler(CommandHandler("get_filter_stop_post", get_filter_stop_post))
 
     app.run_polling()
 
