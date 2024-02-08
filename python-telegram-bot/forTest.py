@@ -1,24 +1,40 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes, filters, MessageHandler
-from Examples.tokens.tokens_tele_bot import TOKEN
-
+import asyncio
+import logging
+from telegram.ext import CommandHandler, ConversationHandler, ApplicationBuilder
+from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 
 token_bot = TOKEN
+my_id = MY_ID
+my_channel_id = MY_CHANNEL_ID
 
-async def getMessId(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(update.message)
-    print(update.message.text)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+id_channel_pasring = ID_CHANNEL_ID
 
-async def start_callback(update, context):
-    await update.message.reply_text("Hello! I'm your bot.")
+
+# Вызывается по команде
+async def start(update, _):
+    await update.message.reply_text('Kek')
 
 
-def main():
-    app = Application.builder().token(token_bot).build()
+async def main():
+    application = ApplicationBuilder().token(token_bot).build()
 
-    app.add_handler(CommandHandler('start', start_callback))
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), getMessId))
-    app.run_polling()
+    print("qweqew")
 
-if __name__ == '__main__':
-    main()
+
+
+    async with application:  # Calls `initialize` and `shutdown`
+        await application.start()
+        await application.updater.start_polling()
+
+        await application.add_handler(CommandHandler("start", start))
+
+        await application.updater.stop()
+        await application.stop()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
