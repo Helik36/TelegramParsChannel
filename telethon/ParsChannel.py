@@ -1,5 +1,6 @@
 from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, NAMES_CHANNEL
 from async_cmd import input_cmd
+from actionWithDB import get_handle_hashtag
 
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 import telethon
@@ -72,7 +73,7 @@ channel_from_pars = CHANNEL_FROM_PARS
 # delete_word = upd_delete_text()
 
 
-def correction_text(event_message):
+async def correction_text(event_message):
     delete_word = upd_delete_text()
     change_text = event_message
 
@@ -80,36 +81,39 @@ def correction_text(event_message):
     # Удаляем теги, предложения (Если удаляется предложение, и с ним целый абзац). Нужно додумать, как удалять именно слова либо только 1 предложение.
     for word in range(len(delete_word)):
 
-        # 1.1 Сделал двойную проверку.
-        # 1.2 При первой проверке удаляется слово с пробелами. Если их больше 1 после окончания текста.
+
         if delete_word[word] in change_text.message:
 
-            # 2.1 Пытаемся получить массив из найденных слов
             try:
+                # Пытаемся найти фильтр в тексте
                 change_text.message = change_text.message.replace(
-                    re.findall(fr"(.*?{delete_word[word]}.+\s+)", change_text.message)[0], "")
+                    re.findall(fr"([?!.].*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0], ". ")
 
-                # 1.3 Но может быть такое, что пробел действительно только 1.
-                # 1.4 Тогда если первой не прошёл, проходит вторая и удаляет лишний пробел после текста
-                if delete_word[word] in change_text.message:
+                # Если первая попытка была успешной, Пытаемся также проверить, что его нет в качестве начального предложения
+                change_text.message = change_text.message.replace(
+                    re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0], "")
+
+            except IndexError:
+                # Если первая попытка была не успешной, пытаетмся также нати в качестве начального предложения здесь
+                try:
                     change_text.message = change_text.message.replace(
-                        re.findall(fr"(.*?{delete_word[word]}.+)", change_text.message)[0], "")
+                        re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0],
+                        "")
+                except IndexError:
+                    # Почему-то если использовать поиск как выше с [^.ru|^.com|^.store] то после знака окончения предложения он ищет пробел.
+                    # Нужно разобраться т.к ещё один трай лишний
+                    change_text.message = change_text.message.replace(
+                        re.findall(fr"(.*?{delete_word[word]}.*?[?!.])", change_text.message)[0],
+                        "")
 
-            # 2.2 Но если слово одно и массив не сформирован, ловим исключение и обрабатываем
-            except:
-                if delete_word[word] in change_text.message:
-                    # print(change_text.message)
-                    assert isinstance(delete_word, object)
-                    try:
-                        change_text.message = change_text.message.replace(
-                            re.findall(fr"(.*?{delete_word[word]}.+)", change_text.message)[0], "")
-                    except: # Для удаления текст, если перед ним ничего нет
-                        print("Asdad", re.findall(fr"({delete_word[word]})", change_text.message), "")
-                        change_text.message = change_text.message.replace(
-                            re.findall(fr"({delete_word[word]})", change_text.message)[0],
-                            "")  # было change_text.message)[0]
+        # Удаление хэштегов
+    if await get_handle_hashtag() == int(1):
+        for i in re.findall(fr"(.*?#.+)", change_text.message):
+            change_text.message = change_text.message.replace(i, "")
 
-    # print(pasring_text.message) # Для дебага сообщений
+    # Удаляем двойнные отступы
+    if "\n\n\n" in change_text.message:
+        change_text.message = change_text.message.replace("\n\n\n", "\n")
 
     # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион
     for i in emoji.UNICODE_EMOJI['en']:
@@ -146,7 +150,7 @@ async def parsing_new_message(event):
                 print(NAMES_CHANNEL[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
 
     pasring_text = event.message
-    pasring_text = correction_text(pasring_text)
+    pasring_text = await correction_text(pasring_text)
 
     # print(pasring_text.message)   # Дебаг
 
@@ -199,4 +203,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    print("Asdasd")

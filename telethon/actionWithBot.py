@@ -71,11 +71,14 @@ async def hundler_delete_filter_delete_text(update, context):
             await update.message.reply_text("Фильтр отсутствует")
 
     else:
-        await delete_from_db_delete_text_from_cmd(user_input)
-        await get_filter_delete_text(update, context)
-        await update.message.reply_text(f"Фильтр `{user_input}` удалён", reply_markup=reply_markup)
-        return BACK
+        if user_input in await get_from_db_delete_text():
 
+            await delete_from_db_delete_text_from_cmd(user_input)
+            await get_filter_delete_text(update, context)
+            await update.message.reply_text(f"Фильтр `{user_input}` удалён", reply_markup=reply_markup)
+            return BACK
+        else:
+            await update.message.reply_text("Фильтр отсутствует")
 
 async def hundler_delete_filter_stop_post(update, context):
     keyboard = [[InlineKeyboardButton("<< в меню", callback_data='BACK')]]
@@ -96,11 +99,13 @@ async def hundler_delete_filter_stop_post(update, context):
             await update.message.reply_text("Фильтр отсутствует")
 
     else:
-        await delete_from_db_text_stop_post_from_cmd(user_input)
-        await get_filter_stop_post(update, context)
-        await update.message.reply_text(f"Фильтр `{user_input}` стоп-пост удалён", reply_markup=reply_markup)
-        return BACK
-
+        if user_input in await get_from_db_stop_post_text():
+            await delete_from_db_text_stop_post_from_cmd(user_input)
+            await get_filter_stop_post(update, context)
+            await update.message.reply_text(f"Фильтр `{user_input}` стоп-пост удалён", reply_markup=reply_markup)
+            return BACK
+        else:
+            await update.message.reply_text("Фильтр отсутствует")
 
 async def add_filter_delete_text(update, context):
     if hasattr(update.message, "text"):

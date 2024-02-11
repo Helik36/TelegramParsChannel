@@ -1,3 +1,4 @@
+import asyncio
 import sqlite3
 
 
@@ -18,6 +19,12 @@ def createbase():
         text_stop_post_trigger TEXT NOT NULL
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS DBhandle_hashtag (
+        handle_hashtag INTEGER
+    )
+    """)
     conn.commit()
 
 
@@ -30,15 +37,20 @@ def append_delete_text():
     # cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", ("asda",))
     # conn.commit()
 
-    data = ["#", "vk", "t.me", "Free Gaming"]
+    data = ["#", "vk", "t.me", "Free Gaming", 'Если понадобится — создадим зарубежный аккаунт',
+            'Цены ниже указаны при покупке с нашей помощью']
+
     for word in data:
         cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [word])  # можно ещё как (word, )
         conn.commit()
 
-    data = ["дарим", "конкурс", "подпишись", "подписаться", "розыгрыш"]
+    data = ["дарим", "конкурс", "подпишись", "розыгрыш"]
     for word in data:
         cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [word])  # можно ещё как (word, )
         conn.commit()
+
+    cursor.execute("INSERT INTO DBhandle_hashtag (handle_hashtag) VALUES (?)", [1])
+    conn.commit()
 
     # cursor.execute("SELECT * FROM delete_text")
     # data = cursor.fetchall()
@@ -60,6 +72,7 @@ async def append_in_db_delete_text_from_cmd(text):
     conn.close()
     return print(f"Фильтр `{text}`  для удаления из поста - добавлен")
 
+
 # Добавить фильтр в БД для стоп слова
 async def append_in_db_stop_pots_from_cmd(text):
     conn = sqlite3.connect('database\\DBnotNeededWords.db')
@@ -70,6 +83,7 @@ async def append_in_db_stop_pots_from_cmd(text):
 
     conn.close()
     return print(f"Фильтр `{text}`  для стоп-пост - добавлен")
+
 
 # Удалить из бд фильтр для удления из поста
 async def delete_from_db_delete_text_from_cmd(text):
@@ -117,6 +131,31 @@ async def get_from_db_stop_post_text():
     return get_text
 
 
+async def swith_handle_hashtag(value):
+    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE DBhandle_hashtag set handle_hashtag = ? ", [value])
+    conn.commit()
+
+    conn.close()
+
+    return print(f"Переключён")
+
+
+async def get_handle_hashtag():
+    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    res = [text[0] for text in cursor.execute("SELECT * FROM DBhandle_hashtag")]
+    conn.commit()
+
+    conn.close()
+
+    return res[0]
+
+
 if __name__ == "__main__":
     createbase()
     append_delete_text()
+    asyncio.run(swith_handle_hashtag(0))
