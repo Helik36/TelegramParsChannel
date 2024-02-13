@@ -83,28 +83,45 @@ async def correction_text(event_message):
 
 
         if delete_word[word] in change_text.message:
-
+            print(delete_word[word])
             try:
                 # Пытаемся найти фильтр в тексте
                 change_text.message = change_text.message.replace(
-                    re.findall(fr"([?!.].*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0], ". ")
-
-                # Если первая попытка была успешной, Пытаемся также проверить, что его нет в качестве начального предложения
-                change_text.message = change_text.message.replace(
-                    re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0], "")
+                    re.findall(fr"((?<=[?!.])\s.*?{delete_word[word]}.*?[?!.][^.|^.ru|^.store]?(?=\s)|(?<=[?!.])\s.*?{delete_word[word]}.*?[?!.][^.|^.ru|^.store]?(?=$))", change_text.message)[0], "")
 
             except IndexError:
-                # Если первая попытка была не успешной, пытаетмся также нати в качестве начального предложения здесь
-                try:
-                    change_text.message = change_text.message.replace(
-                        re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0],
-                        "")
-                except IndexError:
-                    # Почему-то если использовать поиск как выше с [^.ru|^.com|^.store] то после знака окончения предложения он ищет пробел.
-                    # Нужно разобраться т.к ещё один трай лишний
-                    change_text.message = change_text.message.replace(
-                        re.findall(fr"(.*?{delete_word[word]}.*?[?!.])", change_text.message)[0],
-                        "")
+                print("Тут-чек")
+                # Вот так работает, но кто то крадёт точку. Нужно проверить
+                # change_text.message = change_text.message.replace(
+                #     re.findall(
+                #         fr"([\\^\].*{delete_word[word]}.*?[?!.][^.|^.ru^.store]?(?=\s))", change_text.message)[0], "\n")
+                change_text.message = change_text.message.replace(
+                    re.findall(
+                        fr"([\\^\].*vk.*?[?!.][^.|^.ru^.store]?(?=\s))", change_text.message)[0], "\n")
+            # try:
+            #     # Если первая попытка была успешной, Пытаемся также проверить, что его нет в качестве начального предложения
+            #     change_text.message = change_text.message.replace(
+            #         re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0], "")
+            #
+            # except IndexError:
+            #     print("пук")
+                # change_text.message = change_text.message.replace(
+                #     re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0],
+                #     "")
+
+
+            # except IndexError:
+            #     # Если первая попытка была не успешной, пытаетмся также нати в качестве начального предложения здесь
+            #     try:
+            #         change_text.message = change_text.message.replace(
+            #             re.findall(fr"(.*?{delete_word[word]}.*?[?!.][^.ru|^.com|^.store])", change_text.message)[0],
+            #             "")
+            #     except IndexError:
+            #         # Почему-то если использовать поиск как выше с [^.ru|^.com|^.store] то после знака окончения предложения он ищет пробел.
+            #         # Нужно разобраться т.к ещё один трай лишний
+            #         change_text.message = change_text.message.replace(
+            #             re.findall(fr"(.*?{delete_word[word]}.*?[?!.])", change_text.message)[0],
+            #             "")
 
         # Удаление хэштегов
     if await get_handle_hashtag() == int(1):
