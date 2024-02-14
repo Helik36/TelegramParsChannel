@@ -7,6 +7,9 @@ def upd_delete_text():
     DELETE_TEXT = [row[0] for row in cursor.execute("SELECT text_trigger FROM DBdelete_text")]
     conn.close()
 
+    for text in range(len(DELETE_TEXT)):
+        DELETE_TEXT[text] = DELETE_TEXT[text].replace(f"\\", "")
+
     return DELETE_TEXT
 
 def upd_stop_post():

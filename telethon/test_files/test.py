@@ -1,11 +1,28 @@
 import re
 
-p = """В PS Store продолжается распродажа «Выбор критиков» 
- 
-Цены ниже указаны при покупке с нашей помощью.
+replace_symbols = ["(", ")"]
 
-Цены на игры указана при покупке их по отдельности, если в корзине игры на сумму от 1500 лир, то курс на корзину составит 4.5. На очень дорогие игры курс даже ниже. 
- 
-Скидки на игры актуальны до 15 февраля. """
+var = []
 
-print(re.findall(r"^.+покупке", p)[0], "\n")
+# user_input = input(":::: ")
+
+text = """Файтинг 
+ 
+• Mortal Kombat 11 (PS4, PS5) — 400 ₽ — русские субтитры 
+• Mortal Kombat 11 Ultimate Add-On Bundle (PS4, PS5) — 300 ₽ — русские субтитры 
+ 
+Для покупки с нашей помощью пишите нам в сообщения группы ВКонтакте (https://vk.me/pswrld.store) или Telegram (https://pswrld.ru/store).
+
+asdasdasd"""
+
+print(text)
+
+for i in replace_symbols:
+    # user_input = user_input.replace(f"{i}", f"\\{i}")
+
+    text = text.replace("Для покупки с нашей помощью пишите нам в сообщения группы ВКонтакте (https://vk.me/pswrld.store) или Telegram (https://pswrld.ru/store)", "")
+
+print(text)
+
+
+

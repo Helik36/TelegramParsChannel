@@ -3,7 +3,7 @@ import sqlite3
 
 
 def createbase():
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -30,15 +30,14 @@ def createbase():
 
 # Добавить текст в БД для удаления из поста
 def append_delete_text():
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     # Добавить одно слово
     # cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", ("asda",))
     # conn.commit()
 
-    data = ["#", "vk", "t.me", "Free Gaming", 'Если понадобится — создадим зарубежный аккаунт',
-            'Цены ниже указаны при покупке с нашей помощью']
+    data = ["Free Gaming", 'Если понадобится — создадим зарубежный аккаунт', 'Цены ниже указаны при покупке с нашей помощью']
 
     for word in data:
         cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [word])  # можно ещё как (word, )
@@ -63,7 +62,13 @@ def append_delete_text():
 
 # Добавить текст в БД для удаления из поста
 async def append_in_db_delete_text_from_cmd(text):
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+
+    # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
+    replace_symbols = ["(", ")"]
+    for symbol in replace_symbols:
+        text = text.replace(f"{symbol}", f"\\{symbol}")
+
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [text])
@@ -75,7 +80,7 @@ async def append_in_db_delete_text_from_cmd(text):
 
 # Добавить фильтр в БД для стоп слова
 async def append_in_db_stop_pots_from_cmd(text):
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [text])
@@ -87,7 +92,13 @@ async def append_in_db_stop_pots_from_cmd(text):
 
 # Удалить из бд фильтр для удления из поста
 async def delete_from_db_delete_text_from_cmd(text):
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+
+    # Т.к ранее текст со скобками добавлялся со слешом, то и удалить его нужно со слешом
+    replace_symbols = ["(", ")"]
+    for symbol in replace_symbols:
+        text = text.replace(f"{symbol}", f"\\{symbol}")
+
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM DBdelete_text WHERE text_trigger = ?", [text])
@@ -99,7 +110,7 @@ async def delete_from_db_delete_text_from_cmd(text):
 
 # Удалить из бд фильтр стоп-пост
 async def delete_from_db_text_stop_post_from_cmd(text):
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM dbstop_post WHERE text_stop_post_trigger = ?", [text])
@@ -111,7 +122,7 @@ async def delete_from_db_text_stop_post_from_cmd(text):
 
 # Показать фильтр для удаления текста из поста
 async def get_from_db_delete_text():
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     get_text = [text[0] for text in cursor.execute("SELECT text_trigger FROM DBdelete_text")]
@@ -122,7 +133,7 @@ async def get_from_db_delete_text():
 
 # Показать фильтры по стоп-посту
 async def get_from_db_stop_post_text():
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     get_text = [text[0] for text in cursor.execute("SELECT text_stop_post_trigger FROM dbstop_post")]
@@ -132,7 +143,7 @@ async def get_from_db_stop_post_text():
 
 
 async def swith_handle_hashtag(value):
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("UPDATE DBhandle_hashtag set handle_hashtag = ? ", [value])
@@ -144,7 +155,7 @@ async def swith_handle_hashtag(value):
 
 
 async def get_handle_hashtag():
-    conn = sqlite3.connect('database\\DBnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     res = [text[0] for text in cursor.execute("SELECT * FROM DBhandle_hashtag")]
@@ -156,6 +167,7 @@ async def get_handle_hashtag():
 
 
 if __name__ == "__main__":
-    createbase()
-    append_delete_text()
-    asyncio.run(swith_handle_hashtag(0))
+    # createbase()
+    # append_delete_text()
+    # asyncio.run(swith_handle_hashtag(0))
+    print(asyncio.run(get_from_db_delete_text()))

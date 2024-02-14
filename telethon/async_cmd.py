@@ -1,19 +1,13 @@
 from actionWithDB import (append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, get_from_db_delete_text,
-                          get_from_db_stop_post_text, delete_from_db_delete_text_from_cmd,
-                          delete_from_db_text_stop_post_from_cmd, swith_handle_hashtag)
+                          get_from_db_stop_post_text, delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, swith_handle_hashtag)
 
-from additional_files.notNeededWords import upd_delete_text
-import telethon
-import re
-from telethon import TelegramClient, events
-import emoji  # pip install emoji==1.7
-import logging
+
 import asyncio
 import sqlite3
 
 
 async def input_cmd():
-    delete_word = upd_delete_text()
+    delete_word = await get_from_db_delete_text()
     await asyncio.sleep(3)
 
     print("""\nДобавить текст/слово на удаление из поста - /add_delete_text или /1
@@ -29,7 +23,7 @@ async def input_cmd():
         user_input = await asyncio.to_thread(input, "Введи комманду: ")
         if user_input == "check":
 
-            conn = sqlite3.connect("database\\DBnotNeededWords.db")
+            conn = sqlite3.connect("database/DBnotNeededWords.db")
             cursor = conn.cursor()
             print("pass")
 
