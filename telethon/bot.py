@@ -17,16 +17,11 @@ token_bot = TOKEN
 my_id = MY_ID
 my_channel_id = MY_CHANNEL_ID
 
-
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 id_channel_pasring = ID_CHANNEL_ID
 
 BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST = range(8)
-
 
 """
 Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
@@ -113,7 +108,6 @@ async def back(update, _):
 async def main():
     app = Application.builder().token(token_bot).build()
 
-
     """В обработчике ConversationHandler() содержится логика разговора и представляет собой список, который хранит три состояния:
     1) Точку входа в разговор
     2) Этапы разговора
@@ -151,6 +145,7 @@ async def main():
             await asyncio.gather(*tasks)
     except:
         KeyboardInterrupt()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

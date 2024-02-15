@@ -24,23 +24,9 @@ async def input_cmd():
 
     while True:
         user_input = await asyncio.to_thread(input, "Введи комманду: ")
-        if user_input == "check":
-
-            conn = sqlite3.connect("database/DBnotNeededWords.db")
-            cursor = conn.cursor()
-            print("pass")
-
-            cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [user_input])
-            conn.commit()
-
-            cursor.execute("SELECT * FROM DBdelete_text")
-            data = cursor.fetchall()
-            print(data)
-
-            conn.close()
 
         # Добавить тексть в базу на удаление
-        elif user_input == "/add_delete_text" or user_input == "/1":
+        if user_input == "/add_delete_text" or user_input == "/1":
 
             user_input2 = await asyncio.to_thread(input, "Введите текст, который нужно убирать из поста: ")
             await append_in_db_delete_text_from_cmd(user_input2)
@@ -93,4 +79,7 @@ async def input_cmd():
 Удалить текст/слово на удаление из поста - /del_from_db_text или /5
 Удалить текст/слово для стоп-пост - /del_text_stop_post или /6
 Включить/Выключить (1/0) удаление тэгов: 1/0 - /switch_hashtag или /7
+
+Текст необходимо добавлять без точки на конце
+
         """)

@@ -74,10 +74,7 @@ async def filter_text(event):
 # func=filter_text - Фильтр на стоп слово. Своеобразный ручной фильтр func
 @client.on(events.NewMessage(chats=channel_from_pars, func=filter_text))
 async def parsing_new_message(event):
-    # print(event.message) # Дебаг
-    # print(event.message.message)  # Дебаг
 
-    # Дебаг, на какой канал сработало событие
     # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
     # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
     if event.message.message != "":
@@ -87,8 +84,6 @@ async def parsing_new_message(event):
 
     pasring_text = event.message
     pasring_text = await correction_text(pasring_text)
-
-    # print(pasring_text.message)   # Дебаг
 
     if event.grouped_id:
         return  # ignore messages that are gallery here
@@ -106,7 +101,6 @@ async def parsing_new_message(event):
 # Копирует и пересылает фото не разделяя их на разные сообщения. Срабатывает, если фоток больше чем 1
 @client.on(events.Album(chats=channel_from_pars))
 async def parsing_almun(event):
-    # print("Сработал Album\n")
 
     # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
     if not event.original_update.message.message:
@@ -122,8 +116,6 @@ async def start_bot():
     await client.start()
     await client.run_until_disconnected()
 
-
-# Фунция, чтобы добавлять/удалять что-то из БД
 
 async def main():
     task1 = asyncio.create_task(start_bot())

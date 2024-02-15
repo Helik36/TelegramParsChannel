@@ -68,10 +68,6 @@ channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
 channel_from_pars = CHANNEL_FROM_PARS
 
-
-# Массив по которым будут удаляться ненужные слова или текст или вообще не выкладываться. Перенести в другой файл
-# delete_word = upd_delete_text()
-
 async def correction_text(event_message):
     delete_word = await upd_delete_text()
     change_text = event_message
@@ -81,8 +77,6 @@ async def correction_text(event_message):
     for word in range(len(delete_word)):
 
         if delete_word[word] in change_text.message:
-            # print(delete_word[word])
-            # print(text[word])
 
             # Если фильтр находится между двумя другими предложениями и если фильтр находится после предложения и он являтся последним предложением
             try:
@@ -100,7 +94,7 @@ async def correction_text(event_message):
             except IndexError:
                 pass
 
-            # Делает так, чтобы не было двойных отступов.
+            # Делает так, чтобы не было двойных пустых отступов.
             try:
                 change_text.message = change_text.message.replace(re.findall(fr"\n\s\n", change_text.message)[0], "\n\n")
             except IndexError:
@@ -108,7 +102,7 @@ async def correction_text(event_message):
 
         # Удаление хэштегов
     if await get_handle_hashtag() == int(1):
-        for i in re.findall(fr"(.*?#.+)", change_text.message):
+        for i in re.findall(fr"(\n.*?#.+)", change_text.message):
             change_text.message = change_text.message.replace(i, "")
 
     # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион
