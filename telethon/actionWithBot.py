@@ -1,12 +1,12 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, ConversationHandler
+from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 
 from actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
-    delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, get_from_db_delete_text, \
-    get_from_db_stop_post_text
+    delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd
 
 token_bot = TOKEN
 my_id = MY_ID
@@ -59,7 +59,7 @@ async def hundler_delete_filter_delete_text(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     user_input = update.message.text
-    text = [text for text in await get_from_db_delete_text()]
+    text = [text for text in await upd_delete_text()]
 
     if user_input.isdigit():
         try:
@@ -71,7 +71,7 @@ async def hundler_delete_filter_delete_text(update, context):
             await update.message.reply_text("Фильтр отсутствует")
 
     else:
-        if user_input in await get_from_db_delete_text():
+        if user_input in await upd_delete_text():
 
             await delete_from_db_delete_text_from_cmd(user_input)
             await get_filter_delete_text(update, context)
@@ -85,7 +85,7 @@ async def hundler_delete_filter_stop_post(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     user_input = update.message.text
-    text = [text for text in await get_from_db_stop_post_text()]
+    text = [text for text in await upd_stop_post()]
 
     if user_input.isdigit():
         try:
@@ -99,7 +99,7 @@ async def hundler_delete_filter_stop_post(update, context):
             await update.message.reply_text("Фильтр отсутствует")
 
     else:
-        if user_input in await get_from_db_stop_post_text():
+        if user_input in await upd_stop_post():
             await delete_from_db_text_stop_post_from_cmd(user_input)
             await get_filter_stop_post(update, context)
             await update.message.reply_text(f"Фильтр `{user_input}` стоп-пост удалён", reply_markup=reply_markup)
@@ -131,7 +131,7 @@ async def add_filter_stop_post(update, context):
 
 async def get_filter_delete_text(update, context):
     reply_message = ""
-    text = [text for text in await get_from_db_delete_text()]
+    text = [text for text in await upd_delete_text()]
 
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"
@@ -152,7 +152,7 @@ async def get_filter_delete_text(update, context):
 
 async def get_filter_stop_post(update, context):
     reply_message = ""
-    text = [text for text in await get_from_db_stop_post_text()]
+    text = [text for text in await upd_stop_post()]
 
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"
@@ -172,7 +172,7 @@ async def get_filter_stop_post(update, context):
 
 async def delete_filter_delete_text(update, context):
     reply_message = ""
-    text = [text for text in await get_from_db_delete_text()]
+    text = [text for text in await upd_delete_text()]
 
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"
@@ -189,7 +189,7 @@ async def delete_filter_delete_text(update, context):
 
 async def delete_filter_stop_post(update, context):
     reply_message = ""
-    text = [text for text in await get_from_db_stop_post_text()]
+    text = [text for text in await upd_stop_post()]
 
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"

@@ -9,7 +9,6 @@ from telethon import TelegramClient
 import emoji  # pip install emoji==1.7
 import logging
 
-
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
 """
@@ -74,17 +73,16 @@ channel_from_pars = CHANNEL_FROM_PARS
 # delete_word = upd_delete_text()
 
 async def correction_text(event_message):
-    delete_word = upd_delete_text()
+    delete_word = await upd_delete_text()
     change_text = event_message
     text = await get_from_db_delete_text()
 
-    # Сделать отдельную функцию по отработке фильтров. Аля удаление слов, удаление текста. Не постить вообще.
     # Удаляем теги, предложения (Если удаляется предложение, и с ним целый абзац). Нужно додумать, как удалять именно слова либо только 1 предложение.
     for word in range(len(delete_word)):
 
         if delete_word[word] in change_text.message:
-            print(delete_word[word])
-            print(text[word])
+            # print(delete_word[word])
+            # print(text[word])
 
             # Если фильтр находится между двумя другими предложениями и если фильтр находится после предложения и он являтся последним предложением
             try:
@@ -94,15 +92,7 @@ async def correction_text(event_message):
             except IndexError:
                 pass
 
-            # Если фильтр находится после предложения и он являтся последним предложением # Вроде не нужен
-            # try:
-            #     # Пытаемся найти фильтр в тексте
-            #     change_text.message = change_text.message.replace(
-            #         re.findall(fr"(?<=[?!.])\s.*?{delete_word[word]}.*?[?!.][^.|^.ru|^.store]?(?=$)", change_text.message)[0], "")
-            # except IndexError:
-            #     print("Тут-чек2")
-
-            # Если предложение является самым первым и после него есть текст или нет текст
+            # Если предложение является самым первым и после него есть текст или нет текста
             try:
                 change_text.message = change_text.message.replace(re.findall(
                     fr"{text[word]}.*?[?!.][^.|^.ru^.store]?(?=\s|\n)\s|{text[word]}.*?[?!.][^.|^.ru^.store]?(?=\s|\n|$)",
@@ -110,14 +100,16 @@ async def correction_text(event_message):
             except IndexError:
                 pass
 
+            # Делает так, чтобы не было двойных отступов.
+            try:
+                change_text.message = change_text.message.replace(re.findall(fr"\n\s\n", change_text.message)[0], "\n\n")
+            except IndexError:
+                pass
+
         # Удаление хэштегов
     if await get_handle_hashtag() == int(1):
         for i in re.findall(fr"(.*?#.+)", change_text.message):
             change_text.message = change_text.message.replace(i, "")
-
-    # Удаляем двойнные отступы
-    if "\n\n\n" in change_text.message:
-        change_text.message = change_text.message.replace("\n\n\n", "\n")
 
     # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион
     for i in emoji.UNICODE_EMOJI['en']:

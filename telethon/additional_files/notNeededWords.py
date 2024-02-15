@@ -1,6 +1,6 @@
 import sqlite3
 
-def upd_delete_text():
+async def upd_delete_text():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
     cursor = conn.cursor()
 
@@ -12,12 +12,15 @@ def upd_delete_text():
 
     return DELETE_TEXT
 
-def upd_stop_post():
+async def upd_stop_post():
     conn = sqlite3.connect('database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
     cursor = conn.cursor()
 
     STOP_POST = [row[0] for row in cursor.execute("SELECT text_stop_post_trigger FROM DBstop_post")]
     conn.close()
+
+    for text in range(len(STOP_POST)):
+        STOP_POST[text] = STOP_POST[text].replace(f"\\", "")
 
     return STOP_POST
 

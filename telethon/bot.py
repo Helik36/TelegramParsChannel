@@ -17,19 +17,20 @@ token_bot = TOKEN
 my_id = MY_ID
 my_channel_id = MY_CHANNEL_ID
 
+
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 
 id_channel_pasring = ID_CHANNEL_ID
-# app = Application.builder().token(token_bot).build()
 
 BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST = range(8)
 
 
 """
 Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
-красивое и изменяемой сообщение, которое выводит бот
+красивое и изменяемое сообщение, которое выводит бот.
 """
 
 

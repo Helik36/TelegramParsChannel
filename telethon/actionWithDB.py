@@ -80,6 +80,12 @@ async def append_in_db_delete_text_from_cmd(text):
 
 # Добавить фильтр в БД для стоп слова
 async def append_in_db_stop_pots_from_cmd(text):
+
+    # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
+    replace_symbols = ["(", ")"]
+    for symbol in replace_symbols:
+        text = text.replace(f"{symbol}", f"\\{symbol}")
+
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -110,6 +116,12 @@ async def delete_from_db_delete_text_from_cmd(text):
 
 # Удалить из бд фильтр стоп-пост
 async def delete_from_db_text_stop_post_from_cmd(text):
+
+    # Т.к ранее текст со скобками добавлялся со слешом, то и удалить его нужно со слешом
+    replace_symbols = ["(", ")"]
+    for symbol in replace_symbols:
+        text = text.replace(f"{symbol}", f"\\{symbol}")
+
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -126,8 +138,8 @@ async def get_from_db_delete_text():
     cursor = conn.cursor()
 
     get_text = [text[0] for text in cursor.execute("SELECT text_trigger FROM DBdelete_text")]
-
     conn.close()
+
     return get_text
 
 
@@ -137,8 +149,8 @@ async def get_from_db_stop_post_text():
     cursor = conn.cursor()
 
     get_text = [text[0] for text in cursor.execute("SELECT text_stop_post_trigger FROM dbstop_post")]
-
     conn.close()
+
     return get_text
 
 
@@ -169,5 +181,5 @@ async def get_handle_hashtag():
 if __name__ == "__main__":
     # createbase()
     # append_delete_text()
-    # asyncio.run(swith_handle_hashtag(0))
-    print(asyncio.run(get_from_db_delete_text()))
+    asyncio.run(swith_handle_hashtag(1))
+    # print(asyncio.run(get_from_db_delete_text()))
