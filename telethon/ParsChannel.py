@@ -1,8 +1,9 @@
 from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, NAMES_CHANNEL
 from async_cmd import input_cmd
 from correctionTextForPars import correction_text
-
 from additional_files.notNeededWords import upd_stop_post
+from actionWithDB import db_parschannel, get_from_db_parschannel
+
 import telethon
 from telethon import TelegramClient, events
 import logging
@@ -25,15 +26,14 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 """
 
-# ЮБлаблабла
-
 api_id = API_ID
 api_hash = API_HASH
 client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
 channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
-channel_from_pars = CHANNEL_FROM_PARS
+channel_from_pars = asyncio.run(db_parschannel())
+names_channel = asyncio.run(get_from_db_parschannel())
 
 
 # Проверка, что если присутствует слово, пост игнорируется
@@ -50,12 +50,13 @@ async def filter_text(event):
 @client.on(events.NewMessage(chats=channel_from_pars, func=filter_text))
 async def parsing_new_message(event):
 
+
     # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
     # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
     if event.message.message != "":
         if hasattr(event.message.peer_id, "channel_id"):
-            if int(f"-100{event.message.peer_id.channel_id}") in list(NAMES_CHANNEL):
-                print(NAMES_CHANNEL[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
+            if int(f"-100{event.message.peer_id.channel_id}") in list(names_channel):
+                print(names_channel[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
 
     pasring_text = event.message
     pasring_text = await correction_text(pasring_text)

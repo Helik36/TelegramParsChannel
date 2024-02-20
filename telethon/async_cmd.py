@@ -1,6 +1,7 @@
 from actionWithDB import (append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd,
                           delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd,
-                          switch_handle_hashtag, switch_handle_smiles)
+                          switch_handle_hashtag, switch_handle_smiles, append_in_db_parschannel,
+                          get_from_db_parschannel, del_from_db_parschannel)
 
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
@@ -11,117 +12,173 @@ import sqlite3
 async def input_cmd():
     await asyncio.sleep(3)
 
-    print("""\n
-    Добавить текст/слово на удаление из поста - /add_delete_text или /1
-Добавить текст/слово для стоп-пост - /add_text_stop_post или /2
-Посмотреть текущение добавленные триггеры на удаление - /get_delete_text или /3
-Посмотреть текущие стоп-пост триггеры - /get_text_stop_post или /4
-Удалить текст/слово на удаление из поста - /del_from_db_text или /5
-Удалить текст/слово для стоп-пост - /del_text_stop_post или /6
-Включить/Выключить (1/0) удаление тэгов - /switch_hashtag или /7
-Включить/Выключить (1/0) удаление смайлов - /switch_smiles или /8
+    print("> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n")
 
-Текст необходимо добавлять без точки на конце
-    \n""")
 
     while True:
         user_input = await asyncio.to_thread(input, "Введи комманду: ")
 
-        # Добавить тексть в базу на удаление
-        if user_input == "/add_delete_text" or user_input == "/1":
+        # Действие с каналами
+        if user_input == "/1":
 
-            user_input2 = await asyncio.to_thread(input, "Введите текст, который нужно убирать из поста: ")
-            await append_in_db_delete_text_from_cmd(user_input2)
-            print(await upd_delete_text())
+            print("\n> Посмотреть текущие каналы - /1\n> Добавить канал - /2\n> Удалить канал - /3\n< Назад - /4\n")
 
+            user_input2 = await asyncio.to_thread(input, "Выберете действие: ")
 
-        # Добавить тексть в базу для стоп пост
-        elif user_input == "/add_text_stop_post" or user_input == "/2":
+            if user_input2 == "/1":
+                channels = await get_from_db_parschannel()
+                text = ""
 
-            user_input2 = await asyncio.to_thread(input, "Введите текст для стоп слова: ")
-            await append_in_db_stop_pots_from_cmd(user_input2)
-            print(await upd_stop_post())
+                count = 1
+                for i, j in channels.items():
+                    text += f"{count}) {i} : {j}\n"
+                    count += 1
+                print(text)
 
+            elif user_input2 == "/2":
+                user_input3 = await asyncio.to_thread(input, "(//q - отмена действия) Укажите id и название канала через запятую: ")
+                if user_input3 == "//q":
+                    print("Отмена\n")
+                else:
+                    try:
+                        await append_in_db_parschannel(user_input3)
+                    except:
+                        print("Неверно указан формат!! Укажите id и название канала через запятую")
 
-        # Посмотреть текущие предложения на удаление
-        elif user_input == "/del_from_db_text" or user_input == "/3":
+            elif user_input2 == "/3":
+                user_input3 = await asyncio.to_thread(input, "(//q - отмена действия) Введите название канала, который нужно удалить: ")
+                if user_input3 == "//q":
+                    print("Отмена\n")
+                else:
+                    await del_from_db_parschannel(user_input3)
 
-            rows = ""
-            text = [text for text in await upd_delete_text()]
-            for i in range(len(text)):
-                rows = rows + f"{i + 1}) {text[i]}\n"
-
-            print(f"Текущие фильтры для удаления:\n{rows}")
-
-
-        # Посмотреть текущие предложения на удаление
-        elif user_input == "/get_text_stop_post" or user_input == "/4":
-
-            rows = ""
-            text = [text for text in await upd_stop_post()]
-            for i in range(len(text)):
-                rows = rows + f"{i + 1}) {text[i]}\n"
-
-            print(f"Текущие фильтры для стоп-пост:\n{rows}")
-
-
-        # Удалить из БД триггер
-        elif user_input == "/del_from_db_text" or user_input == "/5":
-
-            user_input2 = await asyncio.to_thread(input, "Что нужно удалить из базы: ")
-            check = [text for text in await upd_delete_text()]
-
-            if user_input2 in check:
-                await delete_from_db_delete_text_from_cmd(user_input2)
-                print(f"`{user_input2}` - удалён.")
-            else:
-                print("Фильтр отсутствует!\n")
-
-            print(await upd_delete_text())
+            elif user_input2 == "/4":
+                print("\n> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n")
 
 
-        # Удалить из БД триггер
-        elif user_input == "/del_text_stop_post" or user_input == "/6":
+        # Действие с фильтрами
+        elif user_input == "/2":
 
-            user_input2 = await asyncio.to_thread(input, "Что нужно удалить из базы: ")
-            check = [text for text in await upd_stop_post()]
+            print("\n>> Действие с триггерами по удалению текста из поста - /1\n>> Действие с триггерами для стоп-пост - /2\n<< Назад - /3\n")
+            user_input2 = await asyncio.to_thread(input, "Выберете действие: ")
 
-            if user_input2 in check:
-                await delete_from_db_text_stop_post_from_cmd(user_input2)
-                print(f"`{user_input2}` - удалён.")
-            else:
-                print("Фильтр отсутствует!\n")
+            # >> Действие с триггерами по удалению текста из поста
+            if user_input2 == "/1":
 
-            print(await upd_stop_post())
+                print("\n>>> Посмотреть триггеры для удаления из поста - /1\n>>> Добавить триггер для удаления из поста - /2\n>>> Удалить триггер для удаления из поста - /3\n<<< Назад - /4\n")
+
+                user_input3 = await asyncio.to_thread(input, "Выберете действие: ")
+
+                if user_input3 == "/1":
+                    rows = ""
+                    text = [text for text in await upd_delete_text()]
+                    for i in range(len(text)):
+                        rows = rows + f"{i + 1}) {text[i]}\n"
+
+                    print(f"\nТекущие фильтры для удаления:\n{rows}")
+
+                elif user_input3 == "/2":
+                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия) Введите текст, который нужно убирать из поста: ")
+
+                    if user_input4 == "//q":
+                        print("Отмена\n")
+                    else:
+                        await append_in_db_delete_text_from_cmd(user_input4)
+                        print(await upd_delete_text())
+
+                elif user_input3 == "/3":
+                    rows = ""
+                    check = [text for text in await upd_delete_text()]
+                    for i in range(len(check)):
+                        rows = rows + f"{i + 1}) {check[i]}\n"
+
+                    user_input4 = await asyncio.to_thread(input, f"\n{rows}//q - отмена действия) Что нужно удалить из базы: ")
+
+                    if user_input4 == "//q":
+                        print("Отмена\n")
+                    elif user_input4 in check:
+                        await delete_from_db_delete_text_from_cmd(user_input4)
+                        print(f"`{user_input4}` - удалён.")
+                        print(await upd_delete_text())
+                    else:
+                        print("\nФильтр отсутствует!")
+                        print(await upd_delete_text())
 
 
-        elif user_input == "/switch_hashtag" or user_input == "/7":
 
-            user_input2 = await asyncio.to_thread(input, "1 - Включить\n0 - выключить:\n ")
-            if user_input2 == '1':
-                await switch_handle_hashtag(int(user_input2))
-            elif user_input2 == "0":
-                await switch_handle_hashtag(int(user_input2))
+                elif user_input3 == "/4":
+                    print("\n> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n")
 
-        elif user_input == "/switch_smiles" or user_input == "/8":
+            # >> Действия с триггерами стоп-пост
+            elif user_input2 == "/2":
+                print("\n>>> Посмотреть триггеры для стоп-пост - /1\n>>> Добавить триггер для стоп-пост - /2\n>>> Удалить триггер для стоп-пост - /3\n<<< Назад - /4\n")
 
-            user_input2 = await asyncio.to_thread(input, "1 - Включить\n0 - Выключить:\n ")
-            if user_input2 == '1':
-                await switch_handle_smiles(int(user_input2))
-            elif user_input2 == "0":
-                await switch_handle_smiles(int(user_input2))
+                user_input3 = await asyncio.to_thread(input, "Выберете действие: ")
+
+                if user_input3 == "/1":
+                    rows = ""
+                    text = [text for text in await upd_stop_post()]
+                    for i in range(len(text)):
+                        rows = rows + f"{i + 1}) {text[i]}\n"
+
+                    print(f"Текущие фильтры для стоп-пост:\n{rows}")
+
+                elif user_input3 == "/2":
+
+                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия) Введите текст для стоп слова: ")
+                    if user_input4 == "//q":
+                        print("Отмена\n")
+                    else:
+                        await append_in_db_stop_pots_from_cmd(user_input4)
+                        print(await upd_stop_post())
+
+                elif user_input3 == "/3":
+                    rows = ""
+                    check = [text for text in await upd_stop_post()]
+                    for i in range(len(check)):
+                        rows = rows + f"{i + 1}) {check[i]}\n"
+
+                    user_input4 = await asyncio.to_thread(input, f"\n{rows}(//q - отмена действия) Что нужно удалить из базы: ")
+
+                    if user_input4 == "//q":
+                        print("Отмена\n")
+                    elif user_input4 in check:
+                        await delete_from_db_text_stop_post_from_cmd(user_input4)
+                        print(f"`{user_input4}` - удалён.")
+                    else:
+                        print("\nФильтр отсутствует!")
+
+                    print(await upd_stop_post())
+
+                elif user_input3 == "/4":
+                    print("\n> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n")
+
+        # >> Действие с хэштегами, смайлами
+        elif user_input == "/3":
+
+            print("\n>> Действия с удалением хэштегов - /1\n>> Действий с удалением смайлов - /2\n<< Назад - /3\n")
+
+            user_input2 = await asyncio.to_thread(input, "Выберете действие: ")
+
+            if user_input2 == "/1":
+
+                user_input3 = await asyncio.to_thread(input, "Удаление хэштегов:\n  1 - Включить\n  0 - выключить:\n ")
+                if user_input3 == '1':
+                    await switch_handle_hashtag(int(user_input3))
+                elif user_input3 == "0":
+                    await switch_handle_hashtag(int(user_input3))
+
+            elif user_input2 == "/2":
+                user_input3 = await asyncio.to_thread(input, "Удаление смайлов:\n   1 - Включить\n   0 - Выключить:\n ")
+                if user_input3 == '1':
+                    await switch_handle_smiles(int(user_input3))
+                elif user_input3 == "0":
+                    await switch_handle_smiles(int(user_input3))
+
+            elif user_input2 == "/3":
+                print("\n> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n")
 
         else:
-            print("""Некорректная команда
-Добавить фильтр на удаление из поста - /add_delete_text или /1
-Добавить фильтр для стоп-пост - /add_text_stop_post или /2
-Посмотреть текущение фильтры на удаление - /get_delete_text или /3
-Посмотреть текущие стоп-пост фильтры - /get_text_stop_post или /4
-Удалить текст/слово на удаление из поста - /del_from_db_text или /5
-Удалить текст/слово для стоп-пост - /del_text_stop_post или /6
-Включить/Выключить (1/0) удаление тэгов - /switch_hashtag или /7
-Включить/Выключить (1/0) удаление смайлов - /switch_smiles или /8
+            print("\nНекорректная команда\n> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3 \n")
 
-Текст необходимо добавлять без точки на конце
 
-        """)

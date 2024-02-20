@@ -1,28 +1,10 @@
-import re
-
-replace_symbols = ["(", ")"]
-
-var = []
-
-# user_input = input(":::: ")
-
-text = """Файтинг 
- 
-• Mortal Kombat 11 (PS4, PS5) — 400 ₽ — русские субтитры 
-• Mortal Kombat 11 Ultimate Add-On Bundle (PS4, PS5) — 300 ₽ — русские субтитры 
- 
-Для покупки с нашей помощью пишите нам в сообщения группы ВКонтакте (https://vk.me/pswrld.store) или Telegram (https://pswrld.ru/store).
-
-asdasdasd"""
-
-print(text)
-
-for i in replace_symbols:
-    # user_input = user_input.replace(f"{i}", f"\\{i}")
-
-    text = text.replace("Для покупки с нашей помощью пишите нам в сообщения группы ВКонтакте (https://vk.me/pswrld.store) или Telegram (https://pswrld.ru/store)", "")
-
-print(text)
+NAMES_CHANNEL = {-1002076831448: "Test",
+                 -1001201194408: "PS WORLD",
+                 -1001778660986: "КБ. ИГРЫ",
+                 -1001908326943: "Пекашечка",
+                 -1001397640032: "Раздача игр",
+                 -1001322001342: "InYourEyes"}
 
 
-
+for i, j in NAMES_CHANNEL.items():
+    print(f"{i} : {j}")
