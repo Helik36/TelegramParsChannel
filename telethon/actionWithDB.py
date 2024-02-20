@@ -25,6 +25,13 @@ def createbase():
         handle_hashtag INTEGER
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS DBhandle_smiles (
+        handle_smiles INTEGER
+    )
+    """)
+
     conn.commit()
 
 
@@ -33,11 +40,8 @@ def append_delete_text():
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
-    # Добавить одно слово
-    # cursor.execute("INSERT INTO delete_text (text_trigger) VALUES (?)", ("asda",))
-    # conn.commit()
-
-    data = ["Free Gaming", 'Если понадобится — создадим зарубежный аккаунт', 'Цены ниже указаны при покупке с нашей помощью']
+    data = ["Free Gaming", 'Если понадобится — создадим зарубежный аккаунт',
+            'Цены ниже указаны при покупке с нашей помощью']
 
     for word in data:
         cursor.execute("INSERT INTO DBdelete_text (text_trigger) VALUES (?)", [word])  # можно ещё как (word, )
@@ -51,18 +55,14 @@ def append_delete_text():
     cursor.execute("INSERT INTO DBhandle_hashtag (handle_hashtag) VALUES (?)", [1])
     conn.commit()
 
-    # cursor.execute("SELECT * FROM delete_text")
-    # data = cursor.fetchall()
-    # for word in data:
-    #     print(word[1])
+    cursor.execute("INSERT INTO DBhandle_smiles (handle_smiles) VALUES (?)", [1])
+    conn.commit()
 
-    # cursor.execute("DROP TABLE IF EXISTS delete_text")
     conn.close()
 
 
 # Добавить текст в БД для удаления из поста
 async def append_in_db_delete_text_from_cmd(text):
-
     # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
     replace_symbols = ["(", ")"]
     for symbol in replace_symbols:
@@ -80,7 +80,6 @@ async def append_in_db_delete_text_from_cmd(text):
 
 # Добавить фильтр в БД для стоп слова
 async def append_in_db_stop_pots_from_cmd(text):
-
     # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
     replace_symbols = ["(", ")"]
     for symbol in replace_symbols:
@@ -98,7 +97,6 @@ async def append_in_db_stop_pots_from_cmd(text):
 
 # Удалить из бд фильтр для удления из поста
 async def delete_from_db_delete_text_from_cmd(text):
-
     # Т.к ранее текст со скобками добавлялся со слешом, то и удалить его нужно со слешом
     replace_symbols = ["(", ")"]
     for symbol in replace_symbols:
@@ -116,7 +114,6 @@ async def delete_from_db_delete_text_from_cmd(text):
 
 # Удалить из бд фильтр стоп-пост
 async def delete_from_db_text_stop_post_from_cmd(text):
-
     # Т.к ранее текст со скобками добавлялся со слешом, то и удалить его нужно со слешом
     replace_symbols = ["(", ")"]
     for symbol in replace_symbols:
@@ -154,13 +151,12 @@ async def get_from_db_stop_post_text():
     return get_text
 
 
-async def swith_handle_hashtag(value):
+async def switch_handle_hashtag(value):
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("UPDATE DBhandle_hashtag set handle_hashtag = ? ", [value])
     conn.commit()
-
     conn.close()
 
     return print(f"Переключён")
@@ -172,14 +168,35 @@ async def get_handle_hashtag():
 
     res = [text[0] for text in cursor.execute("SELECT * FROM DBhandle_hashtag")]
     conn.commit()
+    conn.close()
 
+    return res[0]
+
+
+async def switch_handle_smiles(value):
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE DBhandle_smiles set handle_smiles = ? ", [value])
+    conn.commit()
+    conn.close()
+
+    return print(f"Переключён")
+
+
+async def get_handle_smiles():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    res = [text[0] for text in cursor.execute("SELECT * FROM DBhandle_smiles")]
+    conn.commit()
     conn.close()
 
     return res[0]
 
 
 if __name__ == "__main__":
-    # createbase()
+    createbase()
     # append_delete_text()
-    asyncio.run(swith_handle_hashtag(1))
-    # print(asyncio.run(get_from_db_delete_text()))
+    # asyncio.run(switch_handle_hashtag(1))
+    # # print(asyncio.run(get_from_db_delete_text()))

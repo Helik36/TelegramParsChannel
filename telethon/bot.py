@@ -8,7 +8,7 @@ from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 
 from actionWithBot import hundler_add_filter_delete_text, hundler_add_filter_stop_post, \
     hundler_delete_filter_delete_text, hundler_delete_filter_stop_post, add_filter_delete_text, add_filter_stop_post, \
-    get_filter_delete_text, get_filter_stop_post, delete_filter_delete_text, delete_filter_stop_post
+    get_filter_delete_text, get_filter_stop_post, delete_filter_delete_text, delete_filter_stop_post, handle_switch_handle_hashtag_bot, handle_switch_handle_smiles_bot
 
 from ParsChannel import start_bot
 from async_cmd import input_cmd
@@ -21,7 +21,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 id_channel_pasring = ID_CHANNEL_ID
 
-BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST = range(8)
+BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST, SWITHC_HANDLE_HASHTAG, SWITHC_HANDLE_SMILES = range(10)
 
 """
 Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
@@ -35,16 +35,15 @@ async def button(update, _):
 
     # `CallbackQueries` требует ответа, даже если
     # уведомление для пользователя не требуется, в противном
-    #  случае у некоторых клиентов могут возникнуть проблемы.
+    #  случае могут возникнуть проблемы.
     await query.answer()
-    print(variant)
 
     if variant == "ADD_TEXT":
         await add_filter_delete_text(update, _)
         return ADD_TEXT
 
     elif variant == "ADD_STOP_POST":
-        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
+        await add_filter_stop_post(update, _)
         return ADD_STOP_POST
 
     elif variant == "CHECK_TEXT":
@@ -63,6 +62,26 @@ async def button(update, _):
         await delete_filter_stop_post(update, _)
         return DELETE_STOP_POST
 
+    elif variant == "SWITHC_HANDLE_HASHTAG":
+
+        keyboard = [[InlineKeyboardButton("Включить", callback_data='1')],
+                    [InlineKeyboardButton("Выключить", callback_data='0')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(f"Удаление тэгов:\n1 - Включить \n0 - Выключить", reply_markup=menu_markup)
+
+        return SWITHC_HANDLE_HASHTAG
+
+    elif variant == "SWITHC_HANDLE_SMILES":
+
+        keyboard = [[InlineKeyboardButton("Включить", callback_data='1')],
+                    [InlineKeyboardButton("Выключить", callback_data='0')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(f"Удаление смайлов:\n1 - Включить \n0 - Выключить", reply_markup=menu_markup)
+
+        return SWITHC_HANDLE_SMILES
+
     return ConversationHandler.END
 
 
@@ -74,7 +93,9 @@ async def start(update, _):
         [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
         [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
         [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
-        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')]
+        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')],
+        [InlineKeyboardButton("Изменить удаление тэгов", callback_data='SWITHC_HANDLE_HASHTAG')],
+        [InlineKeyboardButton("Изменить удаление смайлов", callback_data='SWITHC_HANDLE_SMILES')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     # для версии 20.x необходимо использовать оператор await
@@ -94,7 +115,9 @@ async def back(update, _):
         [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
         [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
         [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
-        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')]
+        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')],
+        [InlineKeyboardButton("Изменить удаление тэгов", callback_data='SWITHC_HANDLE_HASHTAG')],
+        [InlineKeyboardButton("Изменить удаление смайлов", callback_data='SWITHC_HANDLE_SMILES')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     query = update.callback_query
@@ -127,7 +150,9 @@ async def main():
             ADD_TEXT: [MessageHandler(filters.TEXT, hundler_add_filter_delete_text)],
             ADD_STOP_POST: [MessageHandler(filters.TEXT, hundler_add_filter_stop_post)],
             DELETE_TEXT: [MessageHandler(filters.TEXT, hundler_delete_filter_delete_text)],
-            DELETE_STOP_POST: [MessageHandler(filters.TEXT, hundler_delete_filter_stop_post)]
+            DELETE_STOP_POST: [MessageHandler(filters.TEXT, hundler_delete_filter_stop_post)],
+            SWITHC_HANDLE_HASHTAG: [CallbackQueryHandler(handle_switch_handle_hashtag_bot)],
+            SWITHC_HANDLE_SMILES: [CallbackQueryHandler(handle_switch_handle_smiles_bot)]
         },
         fallbacks=[]
     ))

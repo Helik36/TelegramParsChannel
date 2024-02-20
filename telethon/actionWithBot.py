@@ -6,7 +6,7 @@ from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 
 from actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
-    delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd
+    delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, switch_handle_hashtag, switch_handle_smiles
 
 token_bot = TOKEN
 my_id = MY_ID
@@ -136,7 +136,7 @@ async def get_filter_delete_text(update, context):
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"
 
-    # Трай нужен т.к. ручка была вызваза из InlineKeyboardButton, то отправка сообщения может вызвать ошибку.
+    # Трай нужен т.к. ручка была вызвана из InlineKeyboardButton, то отправка сообщения может вызвать ошибку.
     try:
         await update.message.reply_text(reply_message)
         return ConversationHandler.END
@@ -147,7 +147,7 @@ async def get_filter_delete_text(update, context):
         keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
         menu_markup = InlineKeyboardMarkup(keyboard)
 
-        await query.edit_message_text(f"Фильтра для удаления текста:\n\n{reply_message}", reply_markup=menu_markup)
+        await query.edit_message_text(f"Триггеры для удаления текста:\n\n{reply_message}", reply_markup=menu_markup)
 
 
 async def get_filter_stop_post(update, context):
@@ -157,7 +157,7 @@ async def get_filter_stop_post(update, context):
     for i in range(len(text)):
         reply_message += f"{i + 1}) {text[i]}\n"
 
-    # Трай нужен т.к. ручка была вызваза из InlineKeyboardButton, то отправка сообщения может вызвать ошибку.
+    # Трай нужен т.к. ручка была вызвана из InlineKeyboardButton, то отправка сообщения может вызвать ошибку.
     try:
         await update.message.reply_text(reply_message)
         return ConversationHandler.END
@@ -167,7 +167,7 @@ async def get_filter_stop_post(update, context):
         keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
         menu_markup = InlineKeyboardMarkup(keyboard)
 
-        await query.edit_message_text(f"Фильтр стоп-пост:\n\n{reply_message}", reply_markup=menu_markup)
+        await query.edit_message_text(f"Триггеры стоп-пост:\n\n{reply_message}", reply_markup=menu_markup)
 
 
 async def delete_filter_delete_text(update, context):
@@ -178,8 +178,7 @@ async def delete_filter_delete_text(update, context):
         reply_message += f"{i + 1}) {text[i]}\n"
 
     try:
-        await update.message.reply_text(
-            f"Напиши фильтр удаления из поста который нужно убрать из БД:\n\n{reply_message}")
+        await update.message.reply_text(f"Напиши фильтр удаления из поста который нужно убрать из БД:\n\n{reply_message}")
         return DELETE_TEXT
     except:
         query = update.callback_query
@@ -202,6 +201,39 @@ async def delete_filter_stop_post(update, context):
         await query.answer()
         await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\n\n{reply_message}")
 
+async def handle_switch_handle_hashtag_bot(update, context):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
+    menu_markup = InlineKeyboardMarkup(keyboard)
+
+    if variant == "1":
+        await switch_handle_hashtag(int(variant))
+        await query.edit_message_text(f"Удаление тэгов: Включено", reply_markup=menu_markup)
+    elif variant == "0":
+        await switch_handle_hashtag(int(variant))
+        await query.edit_message_text(f"Удаление тэгов: Выключено", reply_markup=menu_markup)
+
+    return BACK
+
+async def handle_switch_handle_smiles_bot(update, context):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
+    menu_markup = InlineKeyboardMarkup(keyboard)
+
+    if variant == "1":
+        await switch_handle_smiles(int(variant))
+        await query.edit_message_text(f"Удаление смайлов: Включено", reply_markup=menu_markup)
+    elif variant == "0":
+        await switch_handle_smiles(int(variant))
+        await query.edit_message_text(f"Удаление смайлов: Выключено", reply_markup=menu_markup)
+
+    return BACK
 
 """
 add_filter_delete_text - Добавить фильтр для удаления текста из поста
