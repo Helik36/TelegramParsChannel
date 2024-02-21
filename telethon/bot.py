@@ -1,14 +1,13 @@
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
 import asyncio
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
-
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
+from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
 from actionWithBot import hundler_add_filter_delete_text, hundler_add_filter_stop_post, \
-    hundler_delete_filter_delete_text, hundler_delete_filter_stop_post, add_filter_delete_text, add_filter_stop_post, \
-    get_filter_delete_text, get_filter_stop_post, delete_filter_delete_text, delete_filter_stop_post, handle_switch_handle_hashtag_bot, handle_switch_handle_smiles_bot
+    hundler_delete_filter_delete_text, hundler_delete_filter_stop_post, handle_switch_handle_hashtag_bot, handle_switch_handle_smiles_bot
 
 from ParsChannel import start_bot
 from async_cmd import input_cmd
@@ -34,32 +33,61 @@ async def button(update, _):
     variant = query.data
 
     # `CallbackQueries` требует ответа, даже если
-    # уведомление для пользователя не требуется, в противном
-    #  случае могут возникнуть проблемы.
+    # уведомление для пользователя не требуется, в противном случае могут возникнуть проблемы.
     await query.answer()
 
     if variant == "ADD_TEXT":
-        await add_filter_delete_text(update, _)
+        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для удаления из поста")
         return ADD_TEXT
 
     elif variant == "ADD_STOP_POST":
-        await add_filter_stop_post(update, _)
+        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
         return ADD_STOP_POST
 
     elif variant == "CHECK_TEXT":
-        await get_filter_delete_text(update, _)
+        reply_message = ""
+        text = [text for text in await upd_delete_text()]
+
+        for i in range(len(text)):
+            reply_message += f"{i + 1}) {text[i]}\n"
+
+        keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(f"Триггеры для удаления текста:\n\n{reply_message}", reply_markup=menu_markup)
         return BACK
 
     elif variant == "CHECK_STOP_POST":
-        await get_filter_stop_post(update, _)
+        reply_message = ""
+        text = [text for text in await upd_stop_post()]
+
+        for i in range(len(text)):
+            reply_message += f"{i + 1}) {text[i]}\n"
+
+        keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(f"Триггеры стоп-пост:\n\n{reply_message}", reply_markup=menu_markup)
         return BACK
 
     elif variant == "DELETE_TEXT":
-        await delete_filter_delete_text(update, _)
+        reply_message = ""
+        text = [text for text in await upd_delete_text()]
+
+        for i in range(len(text)):
+            reply_message += f"{i + 1}) {text[i]}\n"
+
+        await query.edit_message_text(f"Напиши фильтр удаления из поста который нужно убрать из БД:\n\n{reply_message}")
         return DELETE_TEXT
 
     elif variant == "DELETE_STOP_POST":
-        await delete_filter_stop_post(update, _)
+        reply_message = ""
+        text = [text for text in await upd_stop_post()]
+
+        for i in range(len(text)):
+            reply_message += f"{i + 1}) {text[i]}\n"
+
+        await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\n\n{reply_message}")
         return DELETE_STOP_POST
 
     elif variant == "SWITHC_HANDLE_HASHTAG":
@@ -98,7 +126,7 @@ async def start(update, _):
         [InlineKeyboardButton("Изменить удаление смайлов", callback_data='SWITHC_HANDLE_SMILES')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    # для версии 20.x необходимо использовать оператор await
+
     await update.message.reply_text('Пожалуйста, выберите:', reply_markup=reply_markup)
 
     return BUTTON
@@ -127,7 +155,6 @@ async def back(update, _):
 
     return BUTTON
 
-
 async def main():
     app = Application.builder().token(token_bot).build()
 
@@ -137,13 +164,7 @@ async def main():
     3) Точку выхода из разговора
     """
     app.add_handler(ConversationHandler(
-        entry_points=[CommandHandler("start", start),
-                      CommandHandler("add_filter_delete_text", add_filter_delete_text),
-                      CommandHandler("add_filter_stop_post", add_filter_stop_post),
-                      CommandHandler("get_filter_delete_text", get_filter_delete_text),
-                      CommandHandler("get_filter_stop_post", get_filter_stop_post),
-                      CommandHandler("del_filter_delete_text", delete_filter_delete_text),
-                      CommandHandler("del_filter_stop_post", delete_filter_stop_post)],
+        entry_points=[CommandHandler("start", start)],
         states={
             BUTTON: [CallbackQueryHandler(button)],
             BACK: [CallbackQueryHandler(back)],
