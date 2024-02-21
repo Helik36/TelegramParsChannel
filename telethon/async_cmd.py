@@ -75,7 +75,7 @@ async def input_cmd():
                     for i in range(len(text)):
                         rows = rows + f"{i + 1}) {text[i]}\n"
 
-                    print(f"\nТекущие фильтры для удаления:\n{rows}")
+                    print(f"\nТекущие триггеры для удаления:\n{rows}")
 
                 elif user_input3 == "/2":
                     user_input4 = await asyncio.to_thread(input, "(//q - отмена действия) Введите текст, который нужно убирать из поста: ")
@@ -121,7 +121,7 @@ async def input_cmd():
                     for i in range(len(text)):
                         rows = rows + f"{i + 1}) {text[i]}\n"
 
-                    print(f"Текущие фильтры для стоп-пост:\n{rows}")
+                    print(f"Текущие триггеры для стоп-пост:\n{rows}")
 
                 elif user_input3 == "/2":
 

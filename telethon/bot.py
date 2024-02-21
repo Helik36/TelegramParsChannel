@@ -6,8 +6,10 @@ import logging
 from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
-from actionWithBot import hundler_add_filter_delete_text, hundler_add_filter_stop_post, \
-    hundler_delete_filter_delete_text, hundler_delete_filter_stop_post, handle_switch_handle_hashtag_bot, handle_switch_handle_smiles_bot
+from actionWithBot import handler_view_channel, handler_add_channel, handler_delete_channel, \
+    hаndler_check_trigger_text, handler_add_filter_delete_text, handler_delete_trigger_delete_text, \
+    handler_add_trigger_stop_post, handler_delete_trigger_stop_post, handle_switch_handle_hashtag_bot, \
+    handle_switch_handle_smiles_bot, hаndler_check_trigger_stop_post
 
 from ParsChannel import start_bot
 from async_cmd import input_cmd
@@ -16,11 +18,16 @@ token_bot = TOKEN
 my_id = MY_ID
 my_channel_id = MY_CHANNEL_ID
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)m - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
 id_channel_pasring = ID_CHANNEL_ID
 
-BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT, CHECK_STOP_POST, SWITHC_HANDLE_HASHTAG, SWITHC_HANDLE_SMILES = range(10)
+(BUTTON, BACK,
+ ACTION_WITH_CHANNEL, ADD_CHANNEL, DELETE_CHANNEL,
+ ACTION_WITH_FILTERS,
+ ACTION_WITH_TRIGGER_TEXT, ADD_TRIGGER_TEXT, DELETE_TRIGGER_TEXT,
+ ACTION_WITH_TRIGGER_STOP_POST, ADD_TRIGGER_STOP_POST,  DELETE_TRIGGER_STOP_POST, CHECK_STOP_POST,
+ ACTION_WITH_ANOTHER, SWITCH_HANDLE_HASHTAG, SWITCH_HANDLE_SMILES) = range(16)
 
 """
 Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
@@ -28,87 +35,211 @@ BUTTON, BACK, ADD_TEXT, ADD_STOP_POST, DELETE_TEXT, DELETE_STOP_POST, CHECK_TEXT
 """
 
 
-async def button(update, _):
+# Действия с каналами
+async def action_with_channel(update, _):
     query = update.callback_query
     variant = query.data
-
-    # `CallbackQueries` требует ответа, даже если
-    # уведомление для пользователя не требуется, в противном случае могут возникнуть проблемы.
     await query.answer()
 
-    if variant == "ADD_TEXT":
-        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для удаления из поста")
-        return ADD_TEXT
+    if variant == "VIEW_CHANNEL":
+        await handler_view_channel(update, _)
+        return BACK
 
-    elif variant == "ADD_STOP_POST":
+    elif variant == "ADD_CHANNEL":
+        await query.edit_message_text("Напишите id и название канала через запятую")
+        return ADD_CHANNEL
+
+    elif variant == "DELETE_CHANNEL":
+        await query.edit_message_text("Напишите название канала (не ID), которое нужно удалить")
+        return DELETE_CHANNEL
+
+    else:
+        query = update.callback_query
+        await query.answer()
+
+        keyboard = [
+            [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+            [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+            [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text('Пожалуйста, выберите:', reply_markup=reply_markup)
+        return BUTTON
+
+
+# Действия с триггерами
+async def action_with_filters(update, _):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    if variant == "ACTION_WITH_TEXT":
+        keyboard = [[InlineKeyboardButton(">> Посмотреть триггеры для удаления из поста", callback_data='CHECK_TRIGGER_TEXT')],
+                    [InlineKeyboardButton(">> Добавить триггер для удаления из поста", callback_data='ADD_TRIGGER_TEXT')],
+                    [InlineKeyboardButton(">> Удалить триггер для удаления из поста", callback_data='DELETE_TRIGGER_TEXT')],
+                    [InlineKeyboardButton("<< В меню", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("Выберете действие: ", reply_markup=menu_markup)
+        return ACTION_WITH_TRIGGER_TEXT
+
+    elif variant == "ACTION_WITH_STOP_POST":
+        keyboard = [
+            [InlineKeyboardButton(">> Посмотреть триггеры для стоп-пост", callback_data='CHECK_TRIGGER_STOP_POST')],
+            [InlineKeyboardButton(">> Добавить триггер для стоп-пост", callback_data='ADD_TRIGGER_STOP_POST')],
+            [InlineKeyboardButton(">> Удалить триггер для стоп-пост", callback_data='DELETE_TRIGGER_STOP_POST')],
+            [InlineKeyboardButton("<< В меню", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("Выберете действие: ", reply_markup=menu_markup)
+        return ACTION_WITH_TRIGGER_STOP_POST
+
+# Действия с триггерами для текста
+async def action_with_trigger_text(update, _):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    if variant == 'CHECK_TRIGGER_TEXT':
+        await hаndler_check_trigger_text(update, _)
+        return BACK
+
+    elif variant == 'ADD_TRIGGER_TEXT':
+        await query.edit_message_text("Напиши текст, который нужно добавить как фильтр для удаления из поста")
+        return ADD_TRIGGER_TEXT
+
+    elif variant == 'DELETE_TRIGGER_TEXT':
+        reply_message = ""
+        text = [text for text in await upd_delete_text()]
+
+        for i in range(len(text)):
+            reply_message += f"{i + 1}) {text[i]}\n"
+
+        await query.edit_message_text(f"Напиши фильтр удаления из поста который нужно убрать из БД.\nМожно указать сам текст без точки, либо выбери цифру:\n\n{reply_message}")
+        return DELETE_TRIGGER_TEXT
+
+    else:
+        query = update.callback_query
+        await query.answer()
+
+        keyboard = [
+            [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+            [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+            [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text('Пожалуйста, выберите:', reply_markup=reply_markup)
+        return BUTTON
+
+async def action_with_trigger_stop_post(update, _):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    if variant == 'CHECK_TRIGGER_STOP_POST':
+        await hаndler_check_trigger_stop_post(update, _)
+        return BACK
+
+    elif variant == 'ADD_TRIGGER_STOP_POST':
         await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
-        return ADD_STOP_POST
+        return ADD_TRIGGER_STOP_POST
 
-    elif variant == "CHECK_TEXT":
-        reply_message = ""
-        text = [text for text in await upd_delete_text()]
-
-        for i in range(len(text)):
-            reply_message += f"{i + 1}) {text[i]}\n"
-
-        keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
-        menu_markup = InlineKeyboardMarkup(keyboard)
-
-        await query.edit_message_text(f"Триггеры для удаления текста:\n\n{reply_message}", reply_markup=menu_markup)
-        return BACK
-
-    elif variant == "CHECK_STOP_POST":
+    elif variant == 'DELETE_TRIGGER_STOP_POST':
         reply_message = ""
         text = [text for text in await upd_stop_post()]
 
         for i in range(len(text)):
             reply_message += f"{i + 1}) {text[i]}\n"
 
-        keyboard = [[InlineKeyboardButton("<< назад", callback_data='BACK')]]
-        menu_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\nМожно указать сам текст без точки, либо выбери цифру:\n\n{reply_message}")
+        return DELETE_TRIGGER_STOP_POST
 
-        await query.edit_message_text(f"Триггеры стоп-пост:\n\n{reply_message}", reply_markup=menu_markup)
-        return BACK
+    else:
+        query = update.callback_query
+        await query.answer()
 
-    elif variant == "DELETE_TEXT":
-        reply_message = ""
-        text = [text for text in await upd_delete_text()]
+        keyboard = [
+            [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+            [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+            [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
 
-        for i in range(len(text)):
-            reply_message += f"{i + 1}) {text[i]}\n"
+        await query.edit_message_text('Пожалуйста, выберите:', reply_markup=reply_markup)
+        return BUTTON
 
-        await query.edit_message_text(f"Напиши фильтр удаления из поста который нужно убрать из БД:\n\n{reply_message}")
-        return DELETE_TEXT
+async def action_with_another(update, _):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
 
-    elif variant == "DELETE_STOP_POST":
-        reply_message = ""
-        text = [text for text in await upd_stop_post()]
-
-        for i in range(len(text)):
-            reply_message += f"{i + 1}) {text[i]}\n"
-
-        await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\n\n{reply_message}")
-        return DELETE_STOP_POST
-
-    elif variant == "SWITHC_HANDLE_HASHTAG":
-
+    if variant == "SWITCH_HANDLE_HASHTAG":
         keyboard = [[InlineKeyboardButton("Включить", callback_data='1')],
                     [InlineKeyboardButton("Выключить", callback_data='0')]]
         menu_markup = InlineKeyboardMarkup(keyboard)
 
         await query.edit_message_text(f"Удаление тэгов:\n1 - Включить \n0 - Выключить", reply_markup=menu_markup)
 
-        return SWITHC_HANDLE_HASHTAG
+        return SWITCH_HANDLE_HASHTAG
 
-    elif variant == "SWITHC_HANDLE_SMILES":
-
+    elif variant == "SWITCH_HANDLE_SMILES":
         keyboard = [[InlineKeyboardButton("Включить", callback_data='1')],
-                    [InlineKeyboardButton("Выключить", callback_data='0')]]
+                        [InlineKeyboardButton("Выключить", callback_data='0')]]
         menu_markup = InlineKeyboardMarkup(keyboard)
 
         await query.edit_message_text(f"Удаление смайлов:\n1 - Включить \n0 - Выключить", reply_markup=menu_markup)
 
-        return SWITHC_HANDLE_SMILES
+        return SWITCH_HANDLE_HASHTAG
+
+    else:
+        query = update.callback_query
+        await query.answer()
+
+        keyboard = [
+            [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+            [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+            [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text('Пожалуйста, выберите:', reply_markup=reply_markup)
+        return BUTTON
+
+async def button(update, _):
+    query = update.callback_query
+    variant = query.data
+    await query.answer()
+
+    if variant == "ACTION_WITH_CHANNEL":
+        keyboard = [[InlineKeyboardButton("> Посмотреть текущие каналы", callback_data='VIEW_CHANNEL')],
+                    [InlineKeyboardButton("> Добавить канал", callback_data='ADD_CHANNEL')],
+                    [InlineKeyboardButton("> Удалить канал", callback_data='DELETE_CHANNEL')],
+                    [InlineKeyboardButton("< В меню", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("Выберете действие: ", reply_markup=menu_markup)
+        return ACTION_WITH_CHANNEL
+
+    elif variant == "ACTION_WITH_FILTERS":
+        keyboard = [[InlineKeyboardButton("> Действие с триггерами по удалению текста из поста", callback_data='ACTION_WITH_TEXT')],
+                    [InlineKeyboardButton("> Действие с триггерами для стоп-пост", callback_data='ACTION_WITH_STOP_POST')],
+                    [InlineKeyboardButton("< В меню", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("Выберете действие: ", reply_markup=menu_markup)
+        return ACTION_WITH_FILTERS
+
+    elif variant == "ACTION_WITH_ANOTHER":
+        keyboard = [[InlineKeyboardButton("> Переключить удаление хэштегов", callback_data='SWITCH_HANDLE_HASHTAG')],
+                    [InlineKeyboardButton("> Переключить удаление смайлов", callback_data='SWITCH_HANDLE_SMILES')],
+                    [InlineKeyboardButton("< В меню", callback_data='BACK')]]
+        menu_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text("Выберете действие: ", reply_markup=menu_markup)
+        return ACTION_WITH_ANOTHER
+
 
     return ConversationHandler.END
 
@@ -116,14 +247,9 @@ async def button(update, _):
 # Вызывается по команде
 async def start(update, _):
     keyboard = [
-        [InlineKeyboardButton("Добавить фильтр - удаление текста", callback_data='ADD_TEXT')],
-        [InlineKeyboardButton("Добавить фильтр - стоп-пост", callback_data='ADD_STOP_POST')],
-        [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
-        [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
-        [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
-        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')],
-        [InlineKeyboardButton("Изменить удаление тэгов", callback_data='SWITHC_HANDLE_HASHTAG')],
-        [InlineKeyboardButton("Изменить удаление смайлов", callback_data='SWITHC_HANDLE_SMILES')]
+        [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+        [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+        [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -138,14 +264,9 @@ async def back(update, _):
     await query.answer()
 
     keyboard = [
-        [InlineKeyboardButton("Добавить фильтр - удаление текста", callback_data='ADD_TEXT')],
-        [InlineKeyboardButton("Добавить фильтр - стоп-пост", callback_data='ADD_STOP_POST')],
-        [InlineKeyboardButton("Посмотреть фильтр - удаление текста", callback_data='CHECK_TEXT')],
-        [InlineKeyboardButton("Посмотреть фильтр - стоп-пост", callback_data='CHECK_STOP_POST')],
-        [InlineKeyboardButton("Удалить фильтр - удаление текста", callback_data='DELETE_TEXT')],
-        [InlineKeyboardButton("Удалить фильтр - стоп-пост", callback_data='DELETE_STOP_POST')],
-        [InlineKeyboardButton("Изменить удаление тэгов", callback_data='SWITHC_HANDLE_HASHTAG')],
-        [InlineKeyboardButton("Изменить удаление смайлов", callback_data='SWITHC_HANDLE_SMILES')]
+        [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
+        [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
+        [InlineKeyboardButton("Действие с тэгами/смайлами", callback_data='ACTION_WITH_ANOTHER')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     query = update.callback_query
@@ -155,25 +276,33 @@ async def back(update, _):
 
     return BUTTON
 
+
 async def main():
     app = Application.builder().token(token_bot).build()
 
-    """В обработчике ConversationHandler() содержится логика разговора и представляет собой список, который хранит три состояния:
-    1) Точку входа в разговор
-    2) Этапы разговора
-    3) Точку выхода из разговора
-    """
     app.add_handler(ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             BUTTON: [CallbackQueryHandler(button)],
             BACK: [CallbackQueryHandler(back)],
-            ADD_TEXT: [MessageHandler(filters.TEXT, hundler_add_filter_delete_text)],
-            ADD_STOP_POST: [MessageHandler(filters.TEXT, hundler_add_filter_stop_post)],
-            DELETE_TEXT: [MessageHandler(filters.TEXT, hundler_delete_filter_delete_text)],
-            DELETE_STOP_POST: [MessageHandler(filters.TEXT, hundler_delete_filter_stop_post)],
-            SWITHC_HANDLE_HASHTAG: [CallbackQueryHandler(handle_switch_handle_hashtag_bot)],
-            SWITHC_HANDLE_SMILES: [CallbackQueryHandler(handle_switch_handle_smiles_bot)]
+
+            ACTION_WITH_CHANNEL: [CallbackQueryHandler(action_with_channel)],
+            ADD_CHANNEL: [MessageHandler(filters.TEXT, handler_add_channel)],
+            DELETE_CHANNEL: [MessageHandler(filters.TEXT, handler_delete_channel)],
+
+            ACTION_WITH_FILTERS: [CallbackQueryHandler(action_with_filters)],
+
+            ACTION_WITH_TRIGGER_TEXT: [CallbackQueryHandler(action_with_trigger_text)],
+            ADD_TRIGGER_TEXT: [MessageHandler(filters.TEXT, handler_add_filter_delete_text)],
+            DELETE_TRIGGER_TEXT: [MessageHandler(filters.TEXT, handler_delete_trigger_delete_text)],
+
+            ACTION_WITH_TRIGGER_STOP_POST: [CallbackQueryHandler(action_with_trigger_stop_post)],
+            ADD_TRIGGER_STOP_POST: [MessageHandler(filters.TEXT, handler_add_trigger_stop_post)],
+            DELETE_TRIGGER_STOP_POST: [MessageHandler(filters.TEXT, handler_delete_trigger_stop_post)],
+
+            ACTION_WITH_ANOTHER: [CallbackQueryHandler(action_with_another)],
+            SWITCH_HANDLE_HASHTAG: [CallbackQueryHandler(handle_switch_handle_hashtag_bot)],
+            SWITCH_HANDLE_SMILES: [CallbackQueryHandler(handle_switch_handle_smiles_bot)]
         },
         fallbacks=[]
     ))

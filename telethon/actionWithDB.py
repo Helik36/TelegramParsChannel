@@ -58,7 +58,7 @@ def append_delete_text():
 
     for i, j in NAMES_CHANNEL.items():
         cursor.execute("INSERT INTO channels (id_channel, name_channel) VALUES (?, ?)",
-                       [i, j])  # можно ещё как (word, )
+                       [i, j])
         conn.commit()
 
     data = ["Free Gaming", 'Если понадобится — создадим зарубежный аккаунт',
@@ -69,7 +69,7 @@ def append_delete_text():
 
     data = ["дарим", "конкурс", "подпишись", "розыгрыш"]
     for word in data:
-        cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [word])  # можно ещё как (word, )
+        cursor.execute("INSERT INTO DBstop_post (text_stop_post_trigger) VALUES (?)", [word])
         conn.commit()
 
     cursor.execute("INSERT INTO DBhandle_hashtag (handle_hashtag) VALUES (?)", [1])
@@ -91,7 +91,7 @@ async def append_in_db_parschannel(channnel):
 
     for i, j in channnel.items():
         cursor.execute("INSERT INTO channels (id_channel, name_channel) VALUES (?, ?)",
-                       [i, j])  # можно ещё как (word, )
+                       [i, j])
         conn.commit()
         conn.close()
 
