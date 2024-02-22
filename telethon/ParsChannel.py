@@ -1,4 +1,4 @@
-from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS, NAMES_CHANNEL
+from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
 from async_cmd import input_cmd
 from correctionTextForPars import correction_text
 from additional_files.notNeededWords import upd_stop_post
@@ -29,9 +29,9 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 api_id = API_ID
 api_hash = API_HASH
 client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
-
 channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
+
 channel_from_pars = asyncio.run(db_parschannel())
 names_channel = asyncio.run(get_from_db_parschannel())
 
@@ -44,51 +44,48 @@ async def filter_text(event):
     return True
 
 
-# Срабатывает на сообщения и на сообщения с фото 1.
-#  forwards=False - Не реагировать на пересылаемые сообщения
-# func=filter_text - Фильтр на стоп слово. Своеобразный ручной фильтр func
-@client.on(events.NewMessage(chats=channel_from_pars, func=filter_text))
+@client.on(events.NewMessage(func=filter_text))
 async def parsing_new_message(event):
+    if int(f"-100{event.message.peer_id.channel_id}") in await db_parschannel():
+
+        # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
+        # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
+        if event.message.message != "":
+            if hasattr(event.message.peer_id, "channel_id"):
+                if int(f"-100{event.message.peer_id.channel_id}") in list(names_channel):
+                    print(names_channel[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
+
+        parsing_text = event.message
+        parsing_text = await correction_text(parsing_text)
+
+        if event.grouped_id:
+            return  # ignore messages that are gallery here
+
+        # Пояснение зачем тут try except:
+        # По умолчанию, если отправляется фотка, к ней можно приложить текст с не более 1024 символов. Иначе будет ошибка
+        # Решение: 1) Чтобы этого избежать, нужен премиум, он даёт 2048 символов. 2) Либо отправлять картинку как ссылку
+        # Если текста нет вообще, сообщение может не отправиться. Проверить и подумать
+        try:
+            await client.send_message(channel_PL, parsing_text)
+        except telethon.errors.rpcerrorlist.MediaCaptionTooLongError:
+            print("В тексте больше 1024 символов. Пост игнорируется")
 
 
-    # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
-    # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
-    if event.message.message != "":
-        if hasattr(event.message.peer_id, "channel_id"):
-            if int(f"-100{event.message.peer_id.channel_id}") in list(names_channel):
-                print(names_channel[int(f"-100{event.message.peer_id.channel_id}")])  # Тут словарь
-
-    pasring_text = event.message
-    pasring_text = await correction_text(pasring_text)
-
-    if event.grouped_id:
-        return  # ignore messages that are gallery here
-
-    # Пояснение зачем тут try except:
-    # По умолчанию, если отправляется фотка, к ней можно приложить текст с не более 1024 символов. Иначе будет ошибка
-    # Решение: 1) Чтобы этого избежать, нужен премиум, он даёт 2048 символов. 2) Либо отправлять картинку как ссылку
-    # Если текста нет вообще, сообщение может не отправиться. Проверить и подумать
-    try:
-        await client.send_message(channel_PL, pasring_text)
-    except telethon.errors.rpcerrorlist.MediaCaptionTooLongError:
-        print("В тексте больше 1024 символов. Пост игнорируется")
-
-
-# Копирует и пересылает фото не разделяя их на разные сообщения. Срабатывает, если фоток больше чем 1
-@client.on(events.Album(chats=channel_from_pars))
+@client.on(events.Album())
 async def parsing_almun(event):
+    if int(f"-100{event.original_update.message.peer_id.channel_id}") in await db_parschannel():
 
-    # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
-    if not event.original_update.message.message:
-        caption = event.messages[-1].message
-        await client.send_file(channel_PL, event.messages, caption=caption)
-    else:
-        caption = event.original_update.message.message
-        await client.send_file(channel_PL, event.messages, caption=caption)
+        print("Норм")
+        # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
+        if not event.original_update.message.message:
+            caption = event.messages[-1].message
+            await client.send_file(channel_PL, event.messages, caption=caption)
+        else:
+            caption = event.original_update.message.message
+            await client.send_file(channel_PL, event.messages, caption=caption)
 
 
 async def start_bot():
-    # Запуск бота в асинхронном режиме
     await client.start()
     await client.run_until_disconnected()
 

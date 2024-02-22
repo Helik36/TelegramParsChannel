@@ -37,7 +37,7 @@ async def correction_text(event_message):
             except IndexError:
                 pass
 
-            # Если предложение является самым первым и после него есть текст или нет текста
+            # Если предложение является самым первым и после него есть предложение или нет текста
             try:
                 change_text.message = change_text.message.replace(re.findall(
                     fr"{text[word]}.*?[?!.][^.|^.ru^.store]?(?=\s|\n)\s|{text[word]}.*?[?!.][^.|^.ru^.store]?(?=\s|\n|$)",

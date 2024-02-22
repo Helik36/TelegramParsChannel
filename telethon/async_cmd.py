@@ -6,7 +6,7 @@ from actionWithDB import (append_in_db_delete_text_from_cmd, append_in_db_stop_p
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
 import asyncio
-import sqlite3
+
 
 
 async def input_cmd():
@@ -78,7 +78,7 @@ async def input_cmd():
                     print(f"\nТекущие триггеры для удаления:\n{rows}")
 
                 elif user_input3 == "/2":
-                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия) Введите текст, который нужно убирать из поста: ")
+                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия)Внимание! Текст необходимо добавлять без точки в конце\nВведите текст, который нужно убирать из поста: ")
 
                     if user_input4 == "//q":
                         print("Отмена\n")
@@ -125,7 +125,7 @@ async def input_cmd():
 
                 elif user_input3 == "/2":
 
-                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия) Введите текст для стоп слова: ")
+                    user_input4 = await asyncio.to_thread(input, "(//q - отмена действия)Внимание! Текст необходимо добавлять без точки в конце\nВведите текст для стоп слова: ")
                     if user_input4 == "//q":
                         print("Отмена\n")
                     else:

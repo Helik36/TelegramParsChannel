@@ -106,7 +106,7 @@ async def action_with_trigger_text(update, _):
         return BACK
 
     elif variant == 'ADD_TRIGGER_TEXT':
-        await query.edit_message_text("Напиши текст, который нужно добавить как фильтр для удаления из поста")
+        await query.edit_message_text("Внимание! Текст необходимо добавлять без точки в конце\nНапиши текст, который нужно добавить как фильтр для удаления из поста")
         return ADD_TRIGGER_TEXT
 
     elif variant == 'DELETE_TRIGGER_TEXT':
@@ -116,7 +116,7 @@ async def action_with_trigger_text(update, _):
         for i in range(len(text)):
             reply_message += f"{i + 1}) {text[i]}\n"
 
-        await query.edit_message_text(f"Напиши фильтр удаления из поста который нужно убрать из БД.\nМожно указать сам текст без точки, либо выбери цифру:\n\n{reply_message}")
+        await query.edit_message_text(f"Напиши фильтр удаления из поста который нужно убрать из БД.\nМожно указать сам текст, либо выбери цифру:\n\n{reply_message}")
         return DELETE_TRIGGER_TEXT
 
     else:
@@ -143,7 +143,7 @@ async def action_with_trigger_stop_post(update, _):
         return BACK
 
     elif variant == 'ADD_TRIGGER_STOP_POST':
-        await query.edit_message_text("Напиши текст, который нужно добвить как фильтр для стоп-пост")
+        await query.edit_message_text("Внимание! Текст необходимо добавлять без точки в конце\nНапиши текст, который нужно добавить как фильтр для стоп-пост")
         return ADD_TRIGGER_STOP_POST
 
     elif variant == 'DELETE_TRIGGER_STOP_POST':
@@ -153,7 +153,7 @@ async def action_with_trigger_stop_post(update, _):
         for i in range(len(text)):
             reply_message += f"{i + 1}) {text[i]}\n"
 
-        await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\nМожно указать сам текст без точки, либо выбери цифру:\n\n{reply_message}")
+        await query.edit_message_text(f"Напиши фильтр стоп-пост который нужно убрать из БД:\nМожно указать сам текст, либо выбери цифру:\n\n{reply_message}")
         return DELETE_TRIGGER_STOP_POST
 
     else:
