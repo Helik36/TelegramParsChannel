@@ -1,6 +1,8 @@
+import asyncio
 import sqlite3
 
 
+# Действие с каналами
 async def append_in_db_parschannel(channnel):
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
@@ -51,6 +53,56 @@ async def del_from_db_parschannel(channnel):
     return print(f"Канал `{channnel}` - удалён")
 
 
+# Действия со своими каналами
+
+async def get_my_id_channel():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    channel = [i[0] for i in cursor.execute("SELECT id_channel from my_channels")]
+
+    return channel
+
+async def get_from_db_my_channel():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    names_channel = {}
+    for i, j in cursor.execute("SELECT id_channel, name_channel from my_channels"):
+        names_channel[i] = j
+    conn.close()
+
+    return names_channel
+
+
+async def add_my_channel(my_channnel):
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    get_id_name = my_channnel.split(", ")
+
+    channnel = {get_id_name[0]: get_id_name[1]}
+
+    for i, j in channnel.items():
+        cursor.execute("INSERT INTO my_channels (id_channel, name_channel) VALUES (?, ?)",
+                       [i, j])
+        conn.commit()
+        conn.close()
+
+        return print(f"Канал `{channnel[i]}` - добавлен")
+
+
+async def del_from_db_my_channel(channnel):
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM my_channels WHERE name_channel = ?", [channnel])
+
+    conn.commit()
+    conn.close()
+
+    return print(f"Канал `{channnel}` - удалён")
+
 
 # Добавить текст в БД для удаления из поста
 async def append_in_db_delete_text_from_cmd(text):
@@ -97,8 +149,6 @@ async def delete_from_db_delete_text_from_cmd(text):
     return print(f"Фильтр `{text}` удалён")
 
 
-
-
 # Добавить фильтр в БД для стоп слова
 async def append_in_db_stop_pots_from_cmd(text):
     # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
@@ -142,8 +192,6 @@ async def delete_from_db_text_stop_post_from_cmd(text):
 
     conn.close()
     return print(f"Фильтр `{text}` Удалён")
-
-
 
 
 async def switch_handle_hashtag(value):

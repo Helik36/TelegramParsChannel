@@ -1,8 +1,8 @@
-from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
-from async_cmd import input_cmd
+from tokens.tokens import API_ID, API_HASH
+from actionWithCMD import input_cmd
 from correctionTextForPars import correction_text
 from additional_files.notNeededWords import upd_stop_post
-from actionWithDB import db_get_id_parschannel, get_from_db_parschannel
+from actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_my_id_channel
 
 import telethon
 from telethon import TelegramClient, events
@@ -27,19 +27,20 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 api_id = API_ID
 api_hash = API_HASH
 client = TelegramClient('database/anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
-channel_test = CHANNEL_TEST
-channel_PL = CHANNEL_PL
 
 
 # Проверка, что если присутствует слово, пост игнорируется
 async def filter_text(event):
-    if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
+    try:
+        if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
-        for word in await upd_stop_post():
-            if word.lower() in event.message.message.lower():
-                return False
+            for word in await upd_stop_post():
+                if word.lower() in event.message.message.lower():
+                    return False
 
-        return True
+            return True
+    except:
+        pass
 
 
 @client.on(events.NewMessage(func=filter_text))
@@ -61,9 +62,9 @@ async def parsing_new_message(event):
     # Пояснение зачем тут try except:
     # По умолчанию, если отправляется фотка, к ней можно приложить текст с не более 1024 символов. Иначе будет ошибка
     # Решение: 1) Чтобы этого избежать, нужен премиум, он даёт 2048 символов. 2) Либо отправлять картинку как ссылку
-    # Если текста нет вообще, сообщение может не отправиться. Проверить и подумать
     try:
-        await client.send_message(channel_PL, parsing_text)
+        for my_channel in await get_my_id_channel():
+            await client.send_message(my_channel, parsing_text)
     except telethon.errors.rpcerrorlist.MediaCaptionTooLongError:
         print("В тексте больше 1024 символов. Пост игнорируется")
 
@@ -86,24 +87,24 @@ async def filter_text_album(event):
 
 @client.on(events.Album(func=filter_text_album))
 async def parsing_almun(event):
-    # if int(f"-100{event.original_update.message.peer_id.channel_id}") in await db_get_id_parschannel():
-
     # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
     if not event.original_update.message.message:
         caption = event.messages[-1].message
-        await client.send_file(channel_PL, event.messages, caption=caption)
+        for my_channel in await get_my_id_channel():
+            await client.send_file(my_channel, event.messages, caption=caption)
     else:
         caption = event.original_update.message.message
-        await client.send_file(channel_PL, event.messages, caption=caption)
+        for my_channel in await get_my_id_channel():
+            await client.send_file(my_channel, event.messages, caption=caption)
 
 
-async def start_bot():
+async def start_script():
     await client.start()
     await client.run_until_disconnected()
 
 
 async def main():
-    task1 = asyncio.create_task(start_bot())
+    task1 = asyncio.create_task(start_script())
     task2 = asyncio.create_task(input_cmd())
 
     tasks = [task1, task2]

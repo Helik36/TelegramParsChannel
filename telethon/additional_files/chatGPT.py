@@ -5,6 +5,8 @@ import re
 import openai
 
 
+
+
 async def rewrite(my_text):
     openai.api_key = TOKEN_VSE_GPT
     openai.base_url = "https://api.vsegpt.ru:6070/v1/"

@@ -1,23 +1,13 @@
-from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
-
 from actionWithDB import get_handle_hashtag, get_handle_smiles, get_from_db_delete_text
-
 from additional_files.notNeededWords import upd_delete_text
 
 import re
-from telethon import TelegramClient
 import emoji  # pip install emoji==1.7
 import logging
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
-api_id = API_ID
-api_hash = API_HASH
-client = TelegramClient('anon', api_id, api_hash, system_version='4.16.30-vxCUSTOM')
 
-channel_test = CHANNEL_TEST
-channel_PL = CHANNEL_PL
-channel_from_pars = CHANNEL_FROM_PARS
 
 async def correction_text(event_message):
     delete_word = await upd_delete_text()

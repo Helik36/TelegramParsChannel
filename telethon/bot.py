@@ -3,7 +3,7 @@ from telegram.ext import Application, CommandHandler, ConversationHandler, Messa
 import asyncio
 import logging
 
-from tokens.tokens_tele_bot import TOKEN, MY_ID, MY_CHANNEL_ID, ID_CHANNEL_ID
+from tokens.tokens import TOKEN_BOT
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
 from actionWithBot import handler_view_channel, handler_add_channel, handler_delete_channel, \
@@ -11,16 +11,12 @@ from actionWithBot import handler_view_channel, handler_add_channel, handler_del
     handler_add_trigger_stop_post, handler_delete_trigger_stop_post, handle_switch_handle_hashtag_bot, \
     handle_switch_handle_smiles_bot, hаndler_check_trigger_stop_post
 
-from ParsChannel import start_bot
-from async_cmd import input_cmd
+from ParsChannel import start_script
+from actionWithCMD import input_cmd
 
-token_bot = TOKEN
-my_id = MY_ID
-my_channel_id = MY_CHANNEL_ID
+token_bot = TOKEN_BOT
 
 logging.basicConfig(format='%(asctime)m - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
-id_channel_pasring = ID_CHANNEL_ID
 
 (BUTTON, BACK,
  ACTION_WITH_CHANNEL, ADD_CHANNEL, DELETE_CHANNEL,
@@ -246,6 +242,8 @@ async def button(update, _):
 
 # Вызывается по команде
 async def start(update, _):
+
+
     keyboard = [
         [InlineKeyboardButton("Действие с каналами", callback_data='ACTION_WITH_CHANNEL')],
         [InlineKeyboardButton("Действие с фильтрами", callback_data='ACTION_WITH_FILTERS')],
@@ -307,7 +305,7 @@ async def main():
         fallbacks=[]
     ))
 
-    task1 = asyncio.create_task(start_bot())
+    task1 = asyncio.create_task(start_script())
     task2 = asyncio.create_task(input_cmd())
 
     tasks = [task1, task2]

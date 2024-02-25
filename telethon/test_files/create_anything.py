@@ -14,6 +14,14 @@ def createbase():
     """)
 
     cursor.execute("""
+    CREATE TABLE IF NOT EXISTS my_channels (
+        id INTEGER PRIMARY KEY,
+        id_channel INTEGER,
+        name_channel TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS DBdelete_text (
         id INTEGER PRIMARY KEY,
         text_trigger TEXT NOT NULL
@@ -44,7 +52,7 @@ def createbase():
 
 
 # Добавить текст в БД для удаления из поста
-def append_delete_text():
+def append():
     conn = sqlite3.connect('../database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
@@ -59,6 +67,9 @@ def append_delete_text():
         cursor.execute("INSERT INTO channels (id_channel, name_channel) VALUES (?, ?)",
                        [i, j])
         conn.commit()
+
+    cursor.execute("INSERT INTO my_channels (id_channel, name_channel) VALUES (?, ?)", [-1001999849557, "PL"])
+    conn.commit()
 
     data = ["Free Gaming", 'Если понадобится — создадим зарубежный аккаунт',
             'Цены ниже указаны при покупке с нашей помощью']
@@ -79,6 +90,7 @@ def append_delete_text():
 
     conn.close()
 
+
 if __name__ == "__main__":
     createbase()
-    append_delete_text()
+    append()
