@@ -12,6 +12,7 @@ from database.actionWithDB import get_my_id_channel, append_in_db_delete_text_fr
 token_bot = TOKEN_BOT
 my_id = MY_ID
 
+#
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO

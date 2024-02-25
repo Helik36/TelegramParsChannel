@@ -8,7 +8,7 @@ from database.actionWithDB import (append_in_db_delete_text_from_cmd, append_in_
 
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
-
+#
 async def input_cmd():
     await asyncio.sleep(3)
 
