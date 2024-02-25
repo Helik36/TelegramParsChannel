@@ -1,11 +1,11 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application
-from additional_files.notNeededWords import upd_delete_text, upd_stop_post
+
 
 from tokens.tokens import TOKEN_BOT, MY_ID
-
-from actionWithDB import get_my_channel, append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
+from additional_files.notNeededWords import upd_delete_text, upd_stop_post
+from database.actionWithDB import get_my_id_channel, append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
     delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, switch_handle_hashtag, \
     switch_handle_smiles, get_from_db_parschannel, append_in_db_parschannel, del_from_db_parschannel
 
@@ -23,7 +23,7 @@ BACK = range(1)
 
 
 async def parsing_channel(update: Update, context):
-    my_channel_id = await get_my_channel()
+    my_channel_id = await get_my_id_channel()
 
     # Проверяю, что Id совпадает с моим. Если нет, отказ в доступе
     if update.message.chat.id != my_id:

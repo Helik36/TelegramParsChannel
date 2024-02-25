@@ -2,7 +2,7 @@ from tokens.tokens import API_ID, API_HASH
 from actionWithCMD import input_cmd
 from correctionTextForPars import correction_text
 from additional_files.notNeededWords import upd_stop_post
-from actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_my_id_channel
+from database.actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_my_id_channel
 
 import telethon
 from telethon import TelegramClient, events

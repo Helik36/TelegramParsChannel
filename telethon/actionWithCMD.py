@@ -1,20 +1,18 @@
-from actionWithDB import (append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd,
-                          delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd,
-                          switch_handle_hashtag, switch_handle_smiles, append_in_db_parschannel,
-                          get_from_db_parschannel, del_from_db_parschannel,
-                          get_from_db_my_channel, add_my_channel, del_from_db_my_channel)
-
-from additional_files.notNeededWords import upd_delete_text, upd_stop_post
-
 import asyncio
 
+from database.actionWithDB import (append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd,
+                                            delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd,
+                                            switch_handle_hashtag, switch_handle_smiles, append_in_db_parschannel,
+                                            get_from_db_parschannel, del_from_db_parschannel,
+                                            get_from_db_my_channel, add_my_channel, del_from_db_my_channel)
+
+from additional_files.notNeededWords import upd_delete_text, upd_stop_post
 
 
 async def input_cmd():
     await asyncio.sleep(3)
 
     print("> Действие с каналами - /1\n> Действие с фильтрами - /2\n> Действие с тэгами, смайлами - /3\n> Действие с моими каналами - /4")
-
 
     while True:
         user_input = await asyncio.to_thread(input, "Введи комманду: ")

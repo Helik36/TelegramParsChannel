@@ -1,10 +1,9 @@
-import asyncio
 import sqlite3
 
 
 # Действие с каналами
 async def append_in_db_parschannel(channnel):
-    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    conn = sqlite3.connect('database/Words.db')
     cursor = conn.cursor()
 
     get_id_name = channnel.split(", ")
@@ -184,7 +183,7 @@ async def delete_from_db_text_stop_post_from_cmd(text):
     for symbol in replace_symbols:
         text = text.replace(f"{symbol}", f"\\{symbol}")
 
-    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    conn = sqlite3.connect('Ddatabase/BnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM dbstop_post WHERE text_stop_post_trigger = ?", [text])

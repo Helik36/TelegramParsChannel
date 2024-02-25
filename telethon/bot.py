@@ -25,11 +25,6 @@ logging.basicConfig(format='%(asctime)m - %(name)s - %(levelname)s - %(message)s
  ACTION_WITH_TRIGGER_STOP_POST, ADD_TRIGGER_STOP_POST,  DELETE_TRIGGER_STOP_POST, CHECK_STOP_POST,
  ACTION_WITH_ANOTHER, SWITCH_HANDLE_HASHTAG, SWITCH_HANDLE_SMILES) = range(16)
 
-"""
-Две нижние функции нужны, чтобы вместо меню, которое делает FatherBot, можно было сделать самому
-красивое и изменяемое сообщение, которое выводит бот.
-"""
-
 
 # Действия с каналами
 async def action_with_channel(update, _):

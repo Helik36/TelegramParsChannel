@@ -1,4 +1,4 @@
-from actionWithDB import get_handle_hashtag, get_handle_smiles, get_from_db_delete_text
+from database.actionWithDB import get_handle_hashtag, get_handle_smiles, get_from_db_delete_text
 from additional_files.notNeededWords import upd_delete_text
 
 import re
@@ -6,7 +6,6 @@ import emoji  # pip install emoji==1.7
 import logging
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
-
 
 
 async def correction_text(event_message):
@@ -37,13 +36,14 @@ async def correction_text(event_message):
 
             # Делает так, чтобы не было двойных пустых отступов.
             try:
-                change_text.message = change_text.message.replace(re.findall(fr"\n\s\n", change_text.message)[0], "\n\n")
+                change_text.message = change_text.message.replace(re.findall(fr"\n\s\n", change_text.message)[0],
+                                                                  "\n\n")
             except IndexError:
                 pass
 
         # Удаление хэштегов
     if await get_handle_hashtag() == int(1):
-        for i in re.findall(fr"(\n.*?#.+)", change_text.message):
+        for i in re.findall(fr"(#.+)", change_text.message):
             change_text.message = change_text.message.replace(i, "")
 
     # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион

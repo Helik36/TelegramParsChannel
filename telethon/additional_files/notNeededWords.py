@@ -1,6 +1,5 @@
 import sqlite3
 
-
 async def upd_delete_text():
     conn = sqlite3.connect(
         'database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
