@@ -1,28 +1,20 @@
+import random
+import time
+
 from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
 from async_cmd import input_cmd
 from correctionTextForPars import correction_text
 from additional_files.notNeededWords import upd_stop_post
-from actionWithDB import db_get_id_parschannel, get_from_db_parschannel
+from actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_time_pause_post, set_new_time_pause_post
 
 import telethon
 from telethon import TelegramClient, events
 import logging
 import asyncio
+from datetime import datetime, timedelta
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
-"""
-Парсим сообщение. Переселываем в канал
-
-Задачи:
-
-1. Придумать задачи
-
-4. Сделать инструкцию
-
-7. Добавить чат бот-модератор
-
-"""
 
 api_id = API_ID
 api_hash = API_HASH
@@ -31,14 +23,20 @@ channel_test = CHANNEL_TEST
 channel_PL = CHANNEL_PL
 
 
-# Проверка, что если присутствует слово, пост игнорируется
+# Проверка, что если присутствует слово, пост игнорируется и что прошло некоторое время
 async def filter_text(event):
-    if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
-        for word in await upd_stop_post():
-            if word.lower() in event.message.message.lower():
-                return False
+    if datetime.now() > await get_time_pause_post():
+        if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
+            for word in await upd_stop_post():
+                if word.lower() in event.message.message.lower():
+                    return False
+
+        # Пауза между постами
+        minute_time = random.randint(60, 90)
+        new_time = datetime.now() + timedelta(minutes=minute_time)
+        await set_new_time_pause_post(str(new_time))
         return True
 
 
@@ -86,7 +84,6 @@ async def filter_text_album(event):
 
 @client.on(events.Album(func=filter_text_album))
 async def parsing_almun(event):
-    # if int(f"-100{event.original_update.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
     # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
     if not event.original_update.message.message:

@@ -1,8 +1,8 @@
 from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL, CHANNEL_FROM_PARS
-
 from actionWithDB import get_handle_hashtag, get_handle_smiles, get_from_db_delete_text
-
 from additional_files.notNeededWords import upd_delete_text
+from rewriting_text import requsts_in_giga_chat
+
 
 import re
 from telethon import TelegramClient
@@ -62,5 +62,8 @@ async def correction_text(event_message):
             if i in change_text.message:
                 change_text.message = change_text.message.replace(f"{i} ", "")
                 break
+
+    # Отдаём сообщение gigaChat
+    await requsts_in_giga_chat(change_text.message)
 
     return change_text

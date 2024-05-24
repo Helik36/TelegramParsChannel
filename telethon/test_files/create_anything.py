@@ -1,5 +1,7 @@
+from datetime import datetime
 import sqlite3
 
+# Для себя, чтобы не создавать опять всякое
 
 def createbase():
     conn = sqlite3.connect('../database/DBnotNeededWords.db')
@@ -38,6 +40,17 @@ def createbase():
         handle_smiles INTEGER
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS time_pause_for_post (
+        id INTEGER PRIMARY KEY,
+        time_end_pause_post TEXT NOT NULL
+    )
+    """)
+
+    conn.commit()
+
+    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now())])
 
     conn.commit()
     conn.close()
@@ -80,5 +93,20 @@ def append_delete_text():
     conn.close()
 
 if __name__ == "__main__":
-    createbase()
-    append_delete_text()
+
+    conn = sqlite3.connect('../database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+     CREATE TABLE IF NOT EXISTS time_pause_for_post (
+         id INTEGER PRIMARY KEY,
+         time_end_pause_post TEXT NOT NULL
+     )
+     """)
+
+    conn.commit()
+
+    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now())])
+
+    conn.commit()
+    conn.close()

@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 
 async def append_in_db_parschannel(channnel):
@@ -51,7 +52,6 @@ async def del_from_db_parschannel(channnel):
     return print(f"Канал `{channnel}` - удалён")
 
 
-
 # Добавить текст в БД для удаления из поста
 async def append_in_db_delete_text_from_cmd(text):
     # Нужно, чтобы когда добавлятся текст со скобками, перед ним ставился слеш, иначе регулярка воспринимает как часть скрипта, а не текста
@@ -95,8 +95,6 @@ async def delete_from_db_delete_text_from_cmd(text):
 
     conn.close()
     return print(f"Фильтр `{text}` удалён")
-
-
 
 
 # Добавить фильтр в БД для стоп слова
@@ -144,8 +142,6 @@ async def delete_from_db_text_stop_post_from_cmd(text):
     return print(f"Фильтр `{text}` Удалён")
 
 
-
-
 async def switch_handle_hashtag(value):
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
@@ -188,3 +184,42 @@ async def get_handle_smiles():
     conn.close()
 
     return res[0]
+
+
+def create_table_time_pause_post():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS time_pause_for_post (
+        id INTEGER PRIMARY KEY,
+        time_end_pause_post TEXT NOT NULL
+    )
+    """)
+
+    conn.commit()
+
+    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now())])
+
+    conn.commit()
+    conn.close()
+
+async def get_time_pause_post():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    res = [text[0] for text in cursor.execute("SELECT time_end_pause_post FROM time_pause_for_post")]
+
+    return res[0]
+
+async def set_new_time_pause_post(time):
+
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE time_pause_for_post set time_end_pause_post = ? ", [time])
+
+    conn.commit()
+    conn.close()
+
+

@@ -1,0 +1,7 @@
+# private tokens and session
+test_files
+tokens_tele_bot.py
+tokens_telethon.py
+__pycache__
+app.log
+*.session
