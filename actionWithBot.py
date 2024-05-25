@@ -1,37 +1,18 @@
-import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application
 
 
-from tokens.tokens import TOKEN_BOT, MY_ID
+from tokens.tokens import TOKEN_BOT
 from additional_files.notNeededWords import upd_delete_text, upd_stop_post
-from database.actionWithDB import get_my_id_channel, append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
+from database.actionWithDB import append_in_db_delete_text_from_cmd, append_in_db_stop_pots_from_cmd, \
     delete_from_db_delete_text_from_cmd, delete_from_db_text_stop_post_from_cmd, switch_handle_hashtag, \
     switch_handle_smiles, get_from_db_parschannel, append_in_db_parschannel, del_from_db_parschannel
 
 token_bot = TOKEN_BOT
-my_id = MY_ID
-
-#
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
 
 app = Application.builder().token(token_bot).build()
 
-BACK = range(1)
-
-
-async def parsing_channel(update: Update, context):
-    my_channel_id = await get_my_id_channel()
-
-    # Проверяю, что Id совпадает с моим. Если нет, отказ в доступе
-    if update.message.chat.id != my_id:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Access Denied")
-    else:
-        await context.bot.copyMessage(my_channel_id, my_id, update.message.message_id)
-
+BUTTON, BACK = range(2)
 
 # Действие с каналами
 async def handler_view_channel(update, context):
@@ -66,11 +47,10 @@ async def handler_add_channel(update, context):
         for i, j in channels.items():
             text += f"{count}) {i} : {j}\n"
             count += 1
-        await update.message.reply_text(f"Канал `{user_input}` добавлен. Текущие каналы:\n\n{text}",
-                                        reply_markup=reply_markup)
+        await update.message.reply_text(f"Канал `{user_input}` добавлен. Текущие каналы:\n\n{text}", reply_markup=reply_markup)
+
     except:
-        await update.message.reply_text("Неверно указан формат!! Укажите id и название канала через запятую",
-                                        reply_markup=reply_markup)
+        await update.message.reply_text("Неверно указан формат!! Укажите id и название канала через запятую", reply_markup=reply_markup)
 
     return BACK
 
@@ -187,6 +167,7 @@ async def handler_add_trigger_stop_post(update, context):
 
 
 async def handler_delete_trigger_stop_post(update, context):
+
     keyboard = [[InlineKeyboardButton("<< в меню", callback_data='BACK')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -196,8 +177,7 @@ async def handler_delete_trigger_stop_post(update, context):
     if user_input.isdigit():
         try:
             await delete_from_db_text_stop_post_from_cmd(text[int(user_input) - 1])
-            await update.message.reply_text(f"Фильтр `{text[int(user_input) - 1]}` стоп-пост удалён",
-                                            reply_markup=reply_markup)
+            await update.message.reply_text(f"Фильтр `{text[int(user_input) - 1]}` стоп-пост удалён", reply_markup=reply_markup)
             return BACK
 
         except IndexError:
@@ -210,6 +190,7 @@ async def handler_delete_trigger_stop_post(update, context):
             return BACK
         else:
             await update.message.reply_text("Фильтр отсутствует")
+
 
 
 async def handle_switch_handle_hashtag_bot(update, context):

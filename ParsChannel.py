@@ -1,22 +1,20 @@
+from datetime import datetime, timedelta
+import random
+
 from tokens.tokens import API_ID, API_HASH
+from actionWithCMD import input_cmd
 from correctionTextForPars import correction_text
 from additional_files.notNeededWords import upd_stop_post
-from database.actionWithDB import (db_get_id_parschannel, get_from_db_parschannel, get_time_pause_post,
-                                   set_new_time_pause_post, get_my_id_channel)
-from actionWithCMD import input_cmd
-
-import logging
-import random
-import asyncio
-from datetime import datetime, timedelta
+from database.actionWithDB import (db_get_id_parschannel, get_from_db_parschannel, get_my_id_channel,
+                                   get_time_pause_post, set_new_time_pause_post)
 
 import telethon
 from telethon import TelegramClient, events
+import logging
+import asyncio
 
-
-
-logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
-
+logging.basicConfig(filename='logs/app.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 api_id = API_ID
 api_hash = API_HASH
@@ -94,7 +92,6 @@ async def filter_text_album(event):
 
 @client.on(events.Album(func=filter_text_album))
 async def parsing_almun(event):
-
     # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
     if not event.original_update.message.message:
         caption = event.messages[-1].message

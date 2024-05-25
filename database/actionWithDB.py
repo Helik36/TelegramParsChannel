@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Действие с каналами
 async def append_in_db_parschannel(channnel):
-    conn = sqlite3.connect('database/Words.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
     get_id_name = channnel.split(", ")
