@@ -2,7 +2,7 @@ import sqlite3
 
 async def upd_delete_text():
     conn = sqlite3.connect(
-        'database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
+        'database/DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
     cursor = conn.cursor()
 
     DELETE_TEXT = [row[0] for row in cursor.execute("SELECT text_trigger FROM DBdelete_text")]
@@ -16,7 +16,7 @@ async def upd_delete_text():
 
 async def upd_stop_post():
     conn = sqlite3.connect(
-        'database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
+        'database/DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
     cursor = conn.cursor()
 
     STOP_POST = [row[0] for row in cursor.execute("SELECT text_stop_post_trigger FROM DBstop_post")]
@@ -28,11 +28,9 @@ async def upd_stop_post():
     return STOP_POST
 
 
-DELETE_TEXT_SPECIFIC_WORDS = []
-
 if __name__ == "__main__":
     conn = sqlite3.connect(
-        '..\\database\\DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
+        '../database/DBnotNeededWords.db')  # Тут надо менять путь в зависимости от того, где запускаешь файл
     cursor = conn.cursor()
 
     DELETE_TEXT = [row[0] for row in cursor.execute("SELECT text_trigger FROM DBdelete_text")]

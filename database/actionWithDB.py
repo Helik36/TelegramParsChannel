@@ -183,7 +183,7 @@ async def delete_from_db_text_stop_post_from_cmd(text):
     for symbol in replace_symbols:
         text = text.replace(f"{symbol}", f"\\{symbol}")
 
-    conn = sqlite3.connect('Ddatabase/BnotNeededWords.db')
+    conn = sqlite3.connect('database/BnotNeededWords.db')
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM dbstop_post WHERE text_stop_post_trigger = ?", [text])
