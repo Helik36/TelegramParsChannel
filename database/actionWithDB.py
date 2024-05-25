@@ -170,7 +170,7 @@ async def get_from_db_stop_post_text():
     conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
-    get_text = [text[0] for text in cursor.execute("SELECT text_stop_post_trigger FROM dbstop_post")]
+    get_text = [text[0] for text in cursor.execute("SELECT text_stop_post_trigger FROM DBstop_post")]
     conn.close()
 
     return get_text
@@ -183,10 +183,10 @@ async def delete_from_db_text_stop_post_from_cmd(text):
     for symbol in replace_symbols:
         text = text.replace(f"{symbol}", f"\\{symbol}")
 
-    conn = sqlite3.connect('database/BnotNeededWords.db')
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM dbstop_post WHERE text_stop_post_trigger = ?", [text])
+    cursor.execute("DELETE FROM DBstop_post WHERE text_stop_post_trigger = ?", [text])
     conn.commit()
 
     conn.close()
