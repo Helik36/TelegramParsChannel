@@ -34,7 +34,7 @@ async def filter_text(event):
     except:
         pass
 
-    if datetime.now() > await get_time_pause_post():
+    if str(datetime.now()) > await get_time_pause_post():
         if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
             for word in await upd_stop_post():
@@ -46,6 +46,8 @@ async def filter_text(event):
         new_time = datetime.now() + timedelta(minutes=minute_time)
         await set_new_time_pause_post(str(new_time))
         return True
+
+    return False
 
 
 @client.on(events.NewMessage(func=filter_text))
