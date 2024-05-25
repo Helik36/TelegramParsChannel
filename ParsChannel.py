@@ -1,23 +1,19 @@
 from tokens.tokens import API_ID, API_HASH
+from correctionTextForPars import correction_text
+from additional_files.notNeededWords import upd_stop_post
+from database.actionWithDB import (db_get_id_parschannel, get_from_db_parschannel, get_time_pause_post,
+                                   set_new_time_pause_post, get_my_id_channel)
 from actionWithCMD import input_cmd
-from correctionTextForPars import correction_text
-from additional_files.notNeededWords import upd_stop_post
-from database.actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_my_id_channel
+
+import logging
 import random
-import time
-
-from tokens.tokens_telethon import API_ID, API_HASH, CHANNEL_TEST, CHANNEL_PL
-from async_cmd import input_cmd
-from correctionTextForPars import correction_text
-from additional_files.notNeededWords import upd_stop_post
-from actionWithDB import db_get_id_parschannel, get_from_db_parschannel, get_time_pause_post, set_new_time_pause_post
-
+import asyncio
+from datetime import datetime, timedelta
 
 import telethon
 from telethon import TelegramClient, events
-import logging
-import asyncio
-from datetime import datetime, timedelta
+
+
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 

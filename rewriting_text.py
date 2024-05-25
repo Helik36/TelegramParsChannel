@@ -1,11 +1,13 @@
 """Пример работы с чатом через gigachain"""
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.chat_models.gigachat import GigaChat
+
+from tokens.tokens import TOKEN_GIGA_CHAT
 import logging
 
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
 
-token = ""
+token = TOKEN_GIGA_CHAT
 
 # Авторизация в сервисе GigaChat
 chat = GigaChat(credentials=token, verify_ssl_certs=False)
