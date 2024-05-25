@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 
 # Действие с каналами
@@ -50,7 +51,6 @@ async def del_from_db_parschannel(channnel):
     conn.close()
 
     return print(f"Канал `{channnel}` - удалён")
-
 
 # Действия со своими каналами
 
@@ -235,3 +235,41 @@ async def get_handle_smiles():
     conn.close()
 
     return res[0]
+
+
+def create_table_time_pause_post():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS time_pause_for_post (
+        id INTEGER PRIMARY KEY,
+        time_end_pause_post TEXT NOT NULL
+    )
+    """)
+
+    conn.commit()
+
+    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now())])
+
+    conn.commit()
+    conn.close()
+
+async def get_time_pause_post():
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    res = [text[0] for text in cursor.execute("SELECT time_end_pause_post FROM time_pause_for_post")]
+
+    return res[0]
+
+async def set_new_time_pause_post(time):
+
+    conn = sqlite3.connect('database/DBnotNeededWords.db')
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE time_pause_for_post set time_end_pause_post = ? ", [time])
+
+    conn.commit()
+    conn.close()
+
