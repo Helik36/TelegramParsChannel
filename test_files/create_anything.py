@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 
 # Для себя, чтобы не создавать опять всякое
@@ -110,6 +110,12 @@ if __name__ == "__main__":
     cursor = conn.cursor()
 
     cursor.execute("""
+     DROP TABLE IF EXISTS time_pause_for_post
+     """)
+
+    conn.commit()
+
+    cursor.execute("""
      CREATE TABLE IF NOT EXISTS time_pause_for_post (
          id INTEGER PRIMARY KEY,
          time_end_pause_post TEXT NOT NULL
@@ -118,7 +124,7 @@ if __name__ == "__main__":
 
     conn.commit()
 
-    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now())])
+    cursor.execute("INSERT INTO time_pause_for_post (time_end_pause_post) VALUES (?)", [str(datetime.now() - timedelta(hours=4))])
 
     conn.commit()
     conn.close()

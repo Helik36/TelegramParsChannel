@@ -56,6 +56,6 @@ async def correction_text(event_message):
                 break
 
     # Отдаём сообщение gigaChat
-    await requsts_in_giga_chat(change_text.message)
+    change_text.message = await requsts_in_giga_chat(change_text.message)
 
     return change_text

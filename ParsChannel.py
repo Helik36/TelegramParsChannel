@@ -24,31 +24,20 @@ client = TelegramClient('database/anon', api_id, api_hash, system_version='4.16.
 # Проверка, что если присутствует слово, пост игнорируется и что прошло некоторое время
 async def filter_text(event):
     try:
-        if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
+        if str(datetime.now()) > await get_time_pause_post():
+            if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
 
-            for word in await upd_stop_post():
-                if word.lower() in event.message.message.lower():
-                    return False
+                for word in await upd_stop_post():
+                    if word.lower() in event.message.message.lower():
+                        return False
 
-            return True
+                # Пауза между постами
+                minute_time = random.randint(60, 90)
+                new_time = datetime.now() + timedelta(minutes=minute_time)
+                await set_new_time_pause_post(str(new_time))
+                return True
     except:
         pass
-
-    if str(datetime.now()) > await get_time_pause_post():
-        if int(f"-100{event.message.peer_id.channel_id}") in await db_get_id_parschannel():
-
-            for word in await upd_stop_post():
-                if word.lower() in event.message.message.lower():
-                    return False
-
-        # Пауза между постами
-        minute_time = random.randint(60, 90)
-        new_time = datetime.now() + timedelta(minutes=minute_time)
-        await set_new_time_pause_post(str(new_time))
-        return True
-
-    return False
-
 
 @client.on(events.NewMessage(func=filter_text))
 async def parsing_new_message(event):
