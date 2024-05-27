@@ -33,6 +33,7 @@ async def filter_text(event):
             if str(datetime.now()) > old_pause_post:
 
                 # Это временная мера для эксплоит. Нужно добавить отдельно в базу
+                # upd: Ломается логика работы скрипта, если в посте есть и пикча и видео
                 if not hasattr(event.message.media, "video") or event.message.media.video != True:
 
                     for word in await upd_stop_post():
@@ -67,8 +68,6 @@ async def parsing_new_message(event):
 
     # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
     # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
-
-    print(f"event.message.message - {event.message.message}")
 
     parsing_text = event.message
 
@@ -119,20 +118,14 @@ async def parsing_almun(event):
 
     # Если отправляется альбом, в первом объекте текста может не быть, делаем проверку
 
-    print(f"event.original_update.message.message - {event.original_update.message.message}")
-
     if not event.original_update.message.message:
         caption = event.messages[-1].message
-
-        caption = await correction_text(caption)
 
         for my_channel in await get_my_id_channel():
             await client.send_file(my_channel, event.messages, caption=caption)
 
     else:
         caption = event.original_update.message.message
-
-        caption = await correction_text(caption)
 
         for my_channel in await get_my_id_channel():
             await client.send_file(my_channel, event.messages, caption=caption)

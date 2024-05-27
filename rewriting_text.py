@@ -25,7 +25,7 @@ chat = GigaChat(credentials=token, verify_ssl_certs=False)
 async def requsts_in_giga_chat(text):
     messages = [
         SystemMessage(
-            content="Ты профессиональный бот рерайтер. Измени текст, сохраняя смысл и отступы"
+            content="Ты профессиональный бот рерайтер. Измени текст, сохраняя смысл и отступы, либо сделай отсутпы сам, если они отсутствууют"
         )
     ]
 
