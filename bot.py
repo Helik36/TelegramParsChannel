@@ -1,3 +1,5 @@
+import os
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ConversationHandler, MessageHandler, filters, CallbackQueryHandler
 import asyncio
@@ -17,8 +19,9 @@ from actionWithCMD import input_cmd
 token_bot = TOKEN_BOT
 my_id = MY_ID
 
-logging.basicConfig(filename='logs/app.log', level=logging.WARNING,
-                    format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
+logging.basicConfig(filename='logs/app.log',
+            format="\n[%(asctime)s]: %(levelname)s - %(funcName)s: %(lineno)d - %(message)s",
+            level=logging.INFO)
 
 (BUTTON, BACK,
  ACTION_WITH_CHANNEL, ADD_CHANNEL, DELETE_CHANNEL,
@@ -346,4 +349,5 @@ async def main():
 
 
 if __name__ == "__main__":
+
     asyncio.run(main())

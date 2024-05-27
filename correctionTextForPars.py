@@ -7,7 +7,9 @@ import re
 import emoji  # pip install emoji==1.7
 import logging
 
-logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s', level=logging.INFO)
+logging.basicConfig(filename='logs/app.log',
+            format="\n[%(asctime)s]: %(levelname)s - %(funcName)s: %(lineno)d - %(message)s",
+            level=logging.INFO)
 
 
 async def correction_text(event_message):
@@ -56,6 +58,7 @@ async def correction_text(event_message):
                 break
 
     # Отдаём сообщение gigaChat
+    logging.info("Передача текста ГигаЧату\n")
     change_text.message = await requsts_in_giga_chat(change_text.message)
 
     return change_text
