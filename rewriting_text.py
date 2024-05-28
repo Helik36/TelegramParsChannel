@@ -21,11 +21,13 @@ token = TOKEN_GIGA_CHAT
 # Авторизация в сервисе GigaChat
 chat = GigaChat(credentials=token, verify_ssl_certs=False)
 
+target = ("Ты профессионал в рерайте текста. Измени текст, от 50 до 60% сохраняя следующие вещи: "
+          "1) - Был сохранён смысл 2)Были сохранены отступы 3)Если отступы отсутствуют - обязательно сделай их")
 
 async def requsts_in_giga_chat(text):
     messages = [
         SystemMessage(
-            content="Ты профессиональный бот рерайтер. Измени текст, сохраняя смысл и отступы, либо сделай отсутпы сам, если они отсутствууют"
+            content=target
         )
     ]
 

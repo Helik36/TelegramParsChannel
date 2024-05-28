@@ -68,8 +68,10 @@ async def parsing_new_message(event):
 
     # hasattr() принимает два аргумента: объект и имя атрибута в виде строки.
     # Функция возвращает True, если у объекта есть атрибут с указанным именем, и False в противном случае.
-
+    
+    event.message.entities.clear() # Удаляет гиперссылки
     parsing_text = event.message
+    
 
     if event.message.message != "":
 
