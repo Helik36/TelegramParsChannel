@@ -71,11 +71,12 @@ async def parsing_new_message(event):
     
     event.message.entities.clear() # Удаляет гиперссылки
     parsing_text = event.message
-    
+
 
     if event.message.message != "":
 
         parsing_text = await correction_text(parsing_text)
+
 
     if event.grouped_id:
         return  # ignore messages that are gallery here
@@ -84,8 +85,10 @@ async def parsing_new_message(event):
     # По умолчанию, если отправляется фотка, к ней можно приложить текст с не более 1024 символов. Иначе будет ошибка
     # Решение: 1) Чтобы этого избежать, нужен премиум, он даёт 2048 символов. 2) Либо отправлять картинку как ссылку
     try:
+
         for my_channel in await get_my_id_channel():
             await client.send_message(my_channel, parsing_text)
+
     except telethon.errors.rpcerrorlist.MediaCaptionTooLongError:
         logging.info("В тексте больше 1024 символов. Пост игнорируется")
 

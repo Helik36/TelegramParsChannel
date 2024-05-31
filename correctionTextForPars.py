@@ -17,6 +17,7 @@ async def correction_text(event_message):
     change_text = event_message
     text = await get_from_db_delete_text()
 
+
     # Удаляем теги, предложения (Если удаляется предложение, и с ним целый абзац). Нужно додумать, как удалять именно слова либо только 1 предложение.
     for word in range(len(delete_word)):
 
@@ -45,17 +46,16 @@ async def correction_text(event_message):
             except IndexError:
                 pass
 
-        # Удаление хэштегов
+        # Удаление хэштегов. Управляется через БД через команду
     if await get_handle_hashtag() == int(1):
         for i in re.findall(fr"(#.+)", change_text.message):
             change_text.message = change_text.message.replace(i, "")
 
-    # Удаление всех смайликов в тексте. Иногда смайлики могут пролетать т.к. разный регион
+    # Удаление всех смайликов в тексте. Управляется через БД через команду
     if await get_handle_smiles() == int(1):
-        for i in emoji.UNICODE_EMOJI['en']:
-            if i in change_text.message:
-                change_text.message = change_text.message.replace(f"{i} ", "")
-                break
+            # change_text.message = change_text.message.replace(f"{i} ", "")
+            change_text.message = re.sub(r'[^\w\s]', '', change_text.message)  # Удаляем unicode символы (смайлики)
+            # re.sub(r'[^\x00-\x7F]+', '', message) - на всякий
 
     # Отдаём сообщение gigaChat
     logging.info("Передача текста ГигаЧату\n")

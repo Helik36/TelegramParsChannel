@@ -44,7 +44,7 @@ async def requsts_in_giga_chat(text):
             with open("rewrite_file/rewrtire_text.txt", "a") as file:
                 file.write(f"{res.content}\n\n")
 
-        except:
+        except FileExistsError:
             with open("rewrite_file/rewrtire_text.txt", "a") as file:
                 file.write(f"{res.content}\n\n")
 

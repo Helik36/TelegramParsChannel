@@ -1,3 +1,4 @@
 # private tokens and session
 tokens.py
 *.session
+*.log
